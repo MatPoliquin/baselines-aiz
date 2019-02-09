@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from baselines.common.tile_images import tile_images
-from baselines.common.broadcast import set_for_broadcast
+from baselines.common.broadcast import broadcast
 
 class AlreadySteppingError(Exception):
     """
@@ -108,7 +108,7 @@ class VecEnv(ABC):
     def render(self, mode='human'):
         imgs = self.get_images()
         #bigimg = tile_images(imgs)
-        bigimg = set_for_broadcast(imgs[0])
+        bigimg = broadcast.set_gameframe(imgs[0])
         if mode == 'human':
             self.get_viewer().imshow(bigimg)
             return self.get_viewer().isopen
