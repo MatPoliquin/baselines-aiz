@@ -110,7 +110,7 @@ class VecEnv(ABC):
         #bigimg = tile_images(imgs)
         bigimg = broadcast.set_gameframe(imgs[0])
         if mode == 'human':
-            self.get_viewer().imshow(bigimg)
+            self.get_viewer().imshow(bigimg[0])
             return self.get_viewer().isopen
         elif mode == 'rgb_array':
             return bigimg
