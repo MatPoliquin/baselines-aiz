@@ -42,6 +42,7 @@ for env in gym.envs.registry.all():
 _game_envs['retro'] = {
     'BubbleBobble-Nes',
     'SuperMarioBros-Nes',
+    'SuperMarioBros3-Nes',
     'TwinBee3PokoPokoDaimaou-Nes',
     'SpaceHarrier-Nes',
     'SonicTheHedgehog-Genesis',
