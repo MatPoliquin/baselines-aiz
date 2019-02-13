@@ -50,17 +50,17 @@ class TrainingBroadcast():
         cv2.putText(final, ("Reward:%d" % broadcast.rewardmean), (1000,50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255), 1 ,2)
         cv2.putText(final, ("Timesteps:%d" % broadcast.totaltimesteps), (1000,100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255), 1 ,2)
 
-        finalarray = []
-        if not self.playedintro:
-            intro = self.playintro()
-            finalarray = intro
+        #finalarray = []
+        #if not self.playedintro:
+        #    intro = self.playintro()
+        #    finalarray = intro
    
-        finalarray.append(final)
+        #finalarray.append(final)
         #finalarray.append(final)
 
-        self.framelist.clear()
+        #self.framelist.clear()
 
-        return finalarray
+        return final
 
 
 broadcast = TrainingBroadcast()
