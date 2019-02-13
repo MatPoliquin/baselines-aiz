@@ -10,6 +10,7 @@ class TrainingBroadcast():
         self.totaltimesteps = 0
         self.final_dim = (1080, 1920, 3)
         self.playedintro = False
+        self.framelist = []
 
 
     def playintro(self):
@@ -23,6 +24,10 @@ class TrainingBroadcast():
         self.playedintro = True
 
         return introarray
+
+    def addframe(self, ob):
+        self.framelist.append(ob)
+
 
     def set_gameframe(self, img):
         h, w, c = img.shape
@@ -52,6 +57,8 @@ class TrainingBroadcast():
    
         finalarray.append(final)
         #finalarray.append(final)
+
+        self.framelist.clear()
 
         return finalarray
 

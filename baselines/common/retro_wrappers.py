@@ -2,6 +2,7 @@
 from .atari_wrappers import *
 import numpy as np
 import gym
+from baselines.common.broadcast import broadcast
 
 class TimeLimit(gym.Wrapper):
     def __init__(self, env, max_episode_steps=None):
@@ -53,6 +54,8 @@ class StochasticFrameSkip(gym.Wrapper):
             else:
                 ob, rew, done, info = self.env.step(self.curac)
             totrew += rew
+            #for broadcast video
+            #broadcast.addframe(ob)
             if done: break
         return ob, totrew, done, info
 
