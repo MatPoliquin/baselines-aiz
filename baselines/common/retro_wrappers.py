@@ -219,7 +219,7 @@ class StartDoingRandomActionsWrapper(gym.Wrapper):
 def make_retro(*, game, state, max_episode_steps, **kwargs):
     import retro
     env = retro.make(game, state, **kwargs)
-    env = StochasticFrameSkip(env, n=4, stickprob=0.25)
+    #env = StochasticFrameSkip(env, n=4, stickprob=0.25)
     if max_episode_steps is not None:
         env = TimeLimit(env, max_episode_steps=max_episode_steps)
     return env
@@ -230,8 +230,8 @@ def wrap_deepmind_retro(env, scale=True, frame_stack=0):
     """
     env = WarpFrame(env)
     env = ClipRewardEnv(env)
-    if frame_stack > 0:
-        env = FrameStack(env, frame_stack)
+    #if frame_stack > 0:
+    #    env = FrameStack(env, frame_stack)
     if scale:
         env = ScaledFloatFrame(env)
     return env
