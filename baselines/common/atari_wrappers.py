@@ -128,8 +128,10 @@ class ClipRewardEnv(gym.RewardWrapper):
         """Bin reward to {+1, 0, -1} by its sign."""
         return np.sign(reward)
 
+import matplotlib.pyplot as plt
+
 class WarpFrame(gym.ObservationWrapper):
-    def __init__(self, env, width=128, height=128, grayscale=True):
+    def __init__(self, env, width=240, height=240, grayscale=True):
         """Warp frames to 84x84 as done in the Nature paper and later work."""
         gym.ObservationWrapper.__init__(self, env)
         self.width = width
@@ -145,9 +147,16 @@ class WarpFrame(gym.ObservationWrapper):
     def observation(self, frame):
         if self.grayscale:
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+        #print(frame.shape)
         frame = cv2.resize(frame, (self.width, self.height), interpolation=cv2.INTER_AREA)
+        
         if self.grayscale:
             frame = np.expand_dims(frame, -1)
+
+        #showX = np.reshape(frame, (240, 240))
+        #plt.imshow(showX, cmap='gray', interpolation='nearest')
+        #plt.show()
+
         return frame
 
 class FrameStack(gym.Wrapper):

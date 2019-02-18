@@ -49,6 +49,26 @@ _game_envs['retro'] = {
     'Vectorman-Genesis',
     'FinalFight-Snes',
     'SpaceInvaders-Snes',
+    'GoldenAxe-Genesis',
+    'RamboIII-Genesis',
+    '1942-Nes',
+    '1943-Nes',
+    'AddamsFamily-Sms',
+    'Alien3-Sms',
+    'ColumnsIII-Genesis',
+    'ComixZone-Genesis',
+    'DoubleDragon-Nes',
+    'GoldenAxeIII-Genesis',
+    'MortalKombat3-Genesis',
+    'MsPacMan-Sms',
+    'TeenageMutantNinjaTurtlesIITheArcadeGame-Nes',
+    'Terminator-Sms'
+
+
+
+
+
+
 }
 
 
@@ -100,7 +120,7 @@ def build_env(args):
         elif alg == 'trpo_mpi':
             env = make_env(env_id, env_type, seed=seed)
         else:
-            frame_stack_size = 4
+            frame_stack_size = 2
             env = make_vec_env(env_id, env_type, nenv, seed, gamestate=args.gamestate, reward_scale=args.reward_scale)
             env = VecFrameStack(env, frame_stack_size)
 
