@@ -24,32 +24,8 @@ class TrainingBroadcast():
         self.playedintro = True
 
         return introarray
-
-    def addframe(self, ob):
-        self.framelist.append(ob)
-
-
-    def set_gameframe(self, img):
-        h, w, c = img.shape
-        #print(img_nhwc.shape)
-
-        dim = (w * 4,h * 4)
-        upscaled = cv2.resize(img, dim, interpolation=cv2.INTER_NEAREST)
-
-        
-        final = np.zeros(shape=self.final_dim, dtype=np.uint8)
-
-        #upscaled.cop copyto(final.rowRange(0,dim[1]).colRange(0,dim[0]))
-        final[0:dim[1],0:dim[0]] = upscaled
-
-        if math.isnan(broadcast.rewardmean):
-            broadcast.rewardmean = 0;
-        if math.isnan(broadcast.totaltimesteps):
-            broadcast.totaltimesteps = 0;
-
-        cv2.putText(final, ("Reward:%d" % broadcast.rewardmean), (1000,50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("Timesteps:%d" % broadcast.totaltimesteps), (1000,100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255), 1 ,2)
-
+    
+    def add_intro(self):
         #finalarray = []
         #if not self.playedintro:
         #    intro = self.playintro()
@@ -59,6 +35,43 @@ class TrainingBroadcast():
         #finalarray.append(final)
 
         #self.framelist.clear()
+        return
+
+    def addframe(self, ob):
+        self.framelist.append(ob)
+
+    def show_probabilities(self, final):
+        cv2.putText(final, "Probabilities", (0,200), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255), 1 ,2)
+
+    def show_stats(self, final):
+        if math.isnan(broadcast.rewardmean):
+            broadcast.rewardmean = 0;
+        if math.isnan(broadcast.totaltimesteps):
+            broadcast.totaltimesteps = 0;
+
+        cv2.putText(final, ("Reward:%d" % broadcast.rewardmean), (0,100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Timesteps:%d" % broadcast.totaltimesteps), (0,150), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255), 1 ,2)
+
+    def show_inputimage(self, final, img):
+        dim = (84,84)
+        input = cv2.resize(img, dim, interpolation=cv2.INTER_NEAREST)
+        final[500:dim[1]+500,0:dim[0]] = input
+
+    def set_gameframe(self, img):
+        h, w, c = img.shape
+   
+        dim = (w * 4,h * 4)
+        upscaled = cv2.resize(img, dim, interpolation=cv2.INTER_NEAREST)
+
+        final = np.zeros(shape=self.final_dim, dtype=np.uint8)
+
+        start_x = self.final_dim[1] - (w*4) -1
+
+        final[0:dim[1],start_x:dim[0]+start_x] = upscaled
+
+        self.show_stats(final)
+        self.show_probabilities(final)
+        self.show_inputimage(final,img)
 
         return final
 
