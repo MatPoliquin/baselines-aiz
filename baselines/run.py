@@ -15,6 +15,8 @@ from importlib import import_module
 
 from baselines.common.vec_env.vec_normalize import VecNormalize
 
+
+
 try:
     from mpi4py import MPI
 except ImportError:
@@ -114,7 +116,7 @@ def build_env(args):
         elif alg == 'trpo_mpi':
             env = make_env(env_id, env_type, seed=seed)
         else:
-            frame_stack_size = 2
+            frame_stack_size = 4
             env = make_vec_env(env_id, env_type, nenv, seed, gamestate=args.gamestate, reward_scale=args.reward_scale)
             env = VecFrameStack(env, frame_stack_size)
 
