@@ -14,6 +14,7 @@ class TrainingBroadcast():
         self.env = None
         self.action = 0
         self.action_meaning = []
+        self.action_prob = 0
 
     def set_env(self, env):
         #self.env = env
@@ -34,6 +35,9 @@ class TrainingBroadcast():
 
     def set_action_taken(self, action):
         self.action = action
+
+    def set_action_prob(self, logprob):
+        self.action_prob = logprob
 
     def playintro(self):
         introarray = []
@@ -82,7 +86,35 @@ class TrainingBroadcast():
         final[500:dim[1]+500,0:dim[0]] = input
 
     def show_actions(self, final):
-        cv2.putText(final, ("A:%s" % self.action_meaning[self.action]), (0,600), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("A:%s" % self.action_meaning[self.action]), (0,600), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+
+    def show_neuralnetwork(self, final, img):
+        #Input layer
+        cv2.putText(final, ("Input: Stack of 4"), (0,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("84x84 pixels greyscale"), (0,475), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+
+        dim = (84,84)
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+        input = cv2.resize(img, dim, interpolation=cv2.INTER_NEAREST)
+        final[500:dim[1]+500,0:dim[0]] = input
+        final[600:dim[1]+600,0:dim[0]] = input
+        final[700:dim[1]+700,0:dim[0]] = input
+        final[800:dim[1]+800,0:dim[0]] = input
+
+        #Conv net
+
+        #Hidden layer
+
+        #Output layer
+        cv2.putText(final, ("Output"), (500,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("36 Actions"), (500,465), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Prob:%f" % self.action_prob), (500,480), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        for i in range(0,len(self.action_meaning)):
+            color = (255,255,255)
+            if self.action == i:
+                color = (0,255,0)
+            cv2.putText(final, ("%s" % self.action_meaning[i]), (600,500 + i*15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1 ,2)
 
     def set_gameframe(self, img):
         h, w, c = img.shape
@@ -98,8 +130,9 @@ class TrainingBroadcast():
 
         self.show_stats(final)
         self.show_probabilities(final)
-        self.show_inputimage(final,img)
-        self.show_actions(final)
+        #self.show_inputimage(final,img)
+        #self.show_actions(final)
+        self.show_neuralnetwork(final, img)
 
         return final
 

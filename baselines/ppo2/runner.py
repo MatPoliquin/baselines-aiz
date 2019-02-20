@@ -29,6 +29,9 @@ class Runner(AbstractEnvRunner):
             # Given observations, get action value and neglopacs
             # We already have self.obs because Runner superclass run self.obs[:] = env.reset() on init
             actions, values, self.states, neglogpacs = self.model.step(self.obs, S=self.states, M=self.dones)
+            
+            broadcast.set_action_prob(neglogpacs[0])
+
             mb_obs.append(self.obs.copy())
             mb_actions.append(actions)
             mb_values.append(values)
