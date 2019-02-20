@@ -18,6 +18,8 @@ from baselines.common.vec_env.subproc_vec_env import SubprocVecEnv
 from baselines.common.vec_env.dummy_vec_env import DummyVecEnv
 from baselines.common import retro_wrappers
 
+from baselines.common.broadcast import broadcast
+
 def make_vec_env(env_id, env_type, num_env, seed,
                  wrapper_kwargs=None,
                  start_index=0,
@@ -58,6 +60,13 @@ def make_env(env_id, env_type, subrank=0, seed=None, reward_scale=1.0, gamestate
         import retro
         gamestate = gamestate or retro.State.DEFAULT
         env = retro_wrappers.make_retro(game=env_id, max_episode_steps=10000, use_restricted_actions=retro.Actions.DISCRETE, state=gamestate)
+        if subrank == 0:
+            actionlist = []
+            for i in range(0,env.action_space.n):
+                actionlist.append(env.unwrapped.get_action_meaning(i))
+            broadcast.set_action_meaning(actionlist)
+        
+
     else:
         env = gym.make(env_id)
 

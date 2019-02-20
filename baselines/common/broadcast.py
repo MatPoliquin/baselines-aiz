@@ -11,7 +11,29 @@ class TrainingBroadcast():
         self.final_dim = (1080, 1920, 3)
         self.playedintro = False
         self.framelist = []
+        self.env = None
+        self.action = 0
+        self.action_meaning = []
 
+    def set_env(self, env):
+        #self.env = env
+        #for i in range(0,36):
+        #    print(self.env.unwrapped.get_action_meaning(i))
+        return
+
+    def set_action_meaning(self, actionlist):
+        #self.env = env
+        #for i in range(0,36):
+        #    print(self.env.unwrapped.get_action_meaning(i))
+        
+        self.action_meaning = actionlist.copy()
+        print('==============ACTION MEANINGS SET================')
+        print('Size:%d' % len(self.action_meaning))
+        for i in range(0,len(self.action_meaning)):
+            print(self.action_meaning[i])
+
+    def set_action_taken(self, action):
+        self.action = action
 
     def playintro(self):
         introarray = []
@@ -54,8 +76,13 @@ class TrainingBroadcast():
 
     def show_inputimage(self, final, img):
         dim = (84,84)
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
         input = cv2.resize(img, dim, interpolation=cv2.INTER_NEAREST)
         final[500:dim[1]+500,0:dim[0]] = input
+
+    def show_actions(self, final):
+        cv2.putText(final, ("A:%s" % self.action_meaning[self.action]), (0,600), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255), 1 ,2)
 
     def set_gameframe(self, img):
         h, w, c = img.shape
@@ -72,6 +99,7 @@ class TrainingBroadcast():
         self.show_stats(final)
         self.show_probabilities(final)
         self.show_inputimage(final,img)
+        self.show_actions(final)
 
         return final
 

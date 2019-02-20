@@ -1,6 +1,8 @@
 import numpy as np
 from baselines.common.runners import AbstractEnvRunner
 
+from baselines.common.broadcast import broadcast
+
 class Runner(AbstractEnvRunner):
     """
     We use this object to make a mini batch of experiences
@@ -35,6 +37,8 @@ class Runner(AbstractEnvRunner):
 
             # Take actions in env and look the results
             # Infos contains a ton of useful informations
+            broadcast.set_action_taken(actions[0])
+            
             self.obs[:], rewards, self.dones, infos = self.env.step(actions)
             for info in infos:
                 maybeepinfo = info.get('episode')
