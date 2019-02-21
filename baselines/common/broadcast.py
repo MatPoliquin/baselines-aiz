@@ -2,7 +2,8 @@ import cv2
 import matplotlib.pyplot as plt
 import math
 import numpy as np
-
+import math
+import tensorflow as tf
 
 class TrainingBroadcast():
     def __init__(self):
@@ -15,6 +16,7 @@ class TrainingBroadcast():
         self.action = 0
         self.action_meaning = []
         self.action_prob = 0
+        self.have_nn_info = False
 
     def set_env(self, env):
         #self.env = env
@@ -38,6 +40,10 @@ class TrainingBroadcast():
 
     def set_action_prob(self, logprob):
         self.action_prob = logprob
+
+    def get_neuralnetwork_info(self):
+        print(tf.trainable_variables())
+        self.have_nn_info = True
 
     def playintro(self):
         introarray = []
@@ -117,6 +123,11 @@ class TrainingBroadcast():
             cv2.putText(final, ("%s" % self.action_meaning[i]), (600,500 + i*15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1 ,2)
 
     def set_gameframe(self, img):
+
+        if not self.have_nn_info:
+            self.get_neuralnetwork_info()
+
+
         h, w, c = img.shape
    
         dim = (w * 4,h * 4)
@@ -133,6 +144,8 @@ class TrainingBroadcast():
         #self.show_inputimage(final,img)
         #self.show_actions(final)
         self.show_neuralnetwork(final, img)
+
+        
 
         return final
 
