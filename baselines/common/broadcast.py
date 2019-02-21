@@ -34,6 +34,7 @@ class TrainingBroadcast():
         print('Size:%d' % len(self.action_meaning))
         for i in range(0,len(self.action_meaning)):
             print(self.action_meaning[i])
+        print('=================================================')
 
     def set_action_taken(self, action):
         self.action = action
@@ -42,7 +43,11 @@ class TrainingBroadcast():
         self.action_prob = logprob
 
     def get_neuralnetwork_info(self):
-        print(tf.trainable_variables())
+        #print(tf.trainable_variables())
+        print('==============TRAINABLE PARAMETERS================')
+        for s in tf.trainable_variables():
+            print(s)
+        print('==================================================')
         self.have_nn_info = True
 
     def playintro(self):

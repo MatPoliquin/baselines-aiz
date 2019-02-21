@@ -232,8 +232,8 @@ def wrap_deepmind_retro(env, scale=True, frame_stack=0):
     env = ClipRewardEnv(env)
     #if frame_stack > 0:
     #    env = FrameStack(env, frame_stack)
-    if scale:
-        env = ScaledFloatFrame(env)
+    #if scale:
+    #    env = ScaledFloatFrame(env)
     return env
 
 class SonicDiscretizer(gym.ActionWrapper):
