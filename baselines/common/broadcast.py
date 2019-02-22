@@ -101,7 +101,7 @@ class TrainingBroadcast():
 
     def show_neuralnetwork(self, final, img):
         #Input layer
-        cv2.putText(final, ("Input: Stack of 4"), (0,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Input"), (0,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
         cv2.putText(final, ("84x84 pixels greyscale"), (0,475), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
 
         dim = (84,84)
@@ -113,14 +113,30 @@ class TrainingBroadcast():
         final[700:dim[1]+700,0:dim[0]] = input
         final[800:dim[1]+800,0:dim[0]] = input
 
-        #Conv net
+        #Conv net layer 1
+        cv2.putText(final, ("Convnet 1"), (100,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("32 filters"), (100,465), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("8x8"), (100,480), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        
+        #Conv net layer 2
+        cv2.putText(final, ("Convnet 2"), (200,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("64 filters"), (200,465), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("4x4"), (200,480), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+
+        #Conv net layer 3
+        cv2.putText(final, ("Convnet 3"), (300,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("64 filters"), (300,465), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("3x3"), (300,480), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+
 
         #Hidden layer
+        cv2.putText(final, ("Hidden Layer"), (400,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("512 units"), (400,465), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
 
         #Output layer
-        cv2.putText(final, ("Output"), (500,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
-        cv2.putText(final, ("36 Actions"), (500,465), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
-        cv2.putText(final, ("Prob:%f" % self.action_prob), (500,480), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Output"), (600,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("36 Actions"), (600,465), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Prob:%f" % self.action_prob), (600,480), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
         for i in range(0,len(self.action_meaning)):
             color = (255,255,255)
             if self.action == i:
@@ -145,7 +161,6 @@ class TrainingBroadcast():
         final[0:dim[1],start_x:dim[0]+start_x] = upscaled
 
         self.show_stats(final)
-        self.show_probabilities(final)
         #self.show_inputimage(final,img)
         #self.show_actions(final)
         self.show_neuralnetwork(final, img)
