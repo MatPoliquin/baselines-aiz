@@ -86,8 +86,10 @@ class TrainingBroadcast():
         if math.isnan(broadcast.totaltimesteps):
             broadcast.totaltimesteps = 0;
 
-        cv2.putText(final, ("Reward:%d" % broadcast.rewardmean), (0,100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("Timesteps:%d" % broadcast.totaltimesteps), (0,150), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Algo: PPO2"), (0,50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Neural Net: CNN"), (0,100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Reward mean:%d" % broadcast.rewardmean), (0,150), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Timesteps:%d" % broadcast.totaltimesteps), (0,200), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255), 1 ,2)
 
     def show_inputimage(self, final, img):
         dim = (84,84)
@@ -116,22 +118,29 @@ class TrainingBroadcast():
         #Conv net layer 1
         cv2.putText(final, ("Convnet 1"), (100,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
         cv2.putText(final, ("32 filters"), (100,465), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
-        cv2.putText(final, ("8x8"), (100,480), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        #cv2.putText(final, ("8x8"), (100,480), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
         
+        cv2.rectangle(final, (100,480), (180, 560), (255,255,255))
+
         #Conv net layer 2
         cv2.putText(final, ("Convnet 2"), (200,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
         cv2.putText(final, ("64 filters"), (200,465), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
-        cv2.putText(final, ("4x4"), (200,480), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        #cv2.putText(final, ("4x4"), (200,480), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+
+        cv2.rectangle(final, (200, 450), (240, 490), (255,255,255))
 
         #Conv net layer 3
         cv2.putText(final, ("Convnet 3"), (300,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
         cv2.putText(final, ("64 filters"), (300,465), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
-        cv2.putText(final, ("3x3"), (300,480), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        #cv2.putText(final, ("3x3"), (300,480), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
 
+        cv2.rectangle(final, (300, 450), (340, 480), (255,255,255))
 
         #Hidden layer
         cv2.putText(final, ("Hidden Layer"), (400,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
         cv2.putText(final, ("512 units"), (400,465), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+
+        cv2.circle(final, (400,480), 50, (255,255,255,255))
 
         #Output layer
         cv2.putText(final, ("Output"), (600,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
