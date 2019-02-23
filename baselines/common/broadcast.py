@@ -156,11 +156,43 @@ class TrainingBroadcast():
             cv2.putText(final, ("%s" % self.action_meaning[i]), (600,500 + i*15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1 ,2)
 
     def show_nn_weights(self, final):
+        #Show convnet 1
         with tf.variable_scope('ppo2_model/pi/c1', reuse=True) as conv_scope:
             hello = tf.get_variable('w', shape=[8,8,4,32])
-            print(hello)
+            #print(hello)
             weights = hello.eval()
-            print(weights)
+            #print(weights.shape)
+
+            num_channels = hello.shape.dims[3]
+            filter_w = hello.shape.dims[0]
+            filter_h = hello.shape.dims[1]
+            #print(num_channels)
+
+            #for channel in range(0,num_channels):
+            for channel in range(0,10):
+                #print(channel)
+                img = weights[:,:,0,channel]
+                #print(img.shape)
+                img = img * 255.0
+                img = cv2.cvtColor(img.astype(np.uint8), cv2.COLOR_GRAY2RGB)
+
+                dim = (filter_w * 10,filter_h * 10)
+                upscaled = cv2.resize(img, dim, interpolation=cv2.INTER_LINEAR)
+
+                x=channel * 80
+                #print(channel)
+                #print(x)
+                y=0
+
+                final[x:x+dim[0], y:y+dim[1]] = np.uint8(upscaled)
+
+        
+        #Show convnet 2
+        #with tf.variable_scope('ppo2_model/pi/c2', reuse=True) as conv_scope:
+        #    hello = tf.get_variable('w', shape=[4,4,32,64])
+        #    print(hello)
+        #    weights = hello.eval()
+        #    print(weights.shape)
 
     def set_gameframe(self, img):
 
