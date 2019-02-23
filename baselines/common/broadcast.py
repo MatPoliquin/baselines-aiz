@@ -101,6 +101,9 @@ class TrainingBroadcast():
     def show_actions(self, final):
         cv2.putText(final, ("A:%s" % self.action_meaning[self.action]), (0,600), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
 
+    
+
+
     def show_neuralnetwork(self, final, img):
         #Input layer
         cv2.putText(final, ("Input"), (0,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
@@ -152,6 +155,13 @@ class TrainingBroadcast():
                 color = (0,255,0)
             cv2.putText(final, ("%s" % self.action_meaning[i]), (600,500 + i*15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1 ,2)
 
+    def show_nn_weights(self, final):
+        with tf.variable_scope('ppo2_model/pi/c1', reuse=True) as conv_scope:
+            hello = tf.get_variable('w', shape=[8,8,4,32])
+            print(hello)
+            weights = hello.eval()
+            print(weights)
+
     def set_gameframe(self, img):
 
         if not self.have_nn_info:
@@ -173,6 +183,7 @@ class TrainingBroadcast():
         #self.show_inputimage(final,img)
         #self.show_actions(final)
         self.show_neuralnetwork(final, img)
+        self.show_nn_weights(final)
 
         
 
