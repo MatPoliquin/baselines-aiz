@@ -57,6 +57,7 @@ _game_envs['retro'] = {
     '1943-Nes',
     'AddamsFamily-Sms',
     'Alien3-Sms',
+    'Columns-Genesis',
     'ColumnsIII-Genesis',
     'ComixZone-Genesis',
     'DoubleDragon-Nes',
@@ -65,7 +66,10 @@ _game_envs['retro'] = {
     'MsPacMan-Sms',
     'TeenageMutantNinjaTurtlesIITheArcadeGame-Nes',
     'Terminator-Sms',
-    'Breakout-Atari2600'
+    'Breakout-Atari2600',
+    'ContraForce-Nes',
+    'CluCluLand-Nes',
+    'Popeye-Nes'
 }
 
 
