@@ -64,7 +64,8 @@ _game_envs['retro'] = {
     'MortalKombat3-Genesis',
     'MsPacMan-Sms',
     'TeenageMutantNinjaTurtlesIITheArcadeGame-Nes',
-    'Terminator-Sms'
+    'Terminator-Sms',
+    'Breakout-Atari2600'
 }
 
 

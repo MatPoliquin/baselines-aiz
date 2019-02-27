@@ -19,6 +19,9 @@ class TrainingBroadcast():
         self.have_nn_info = False
         self.font = cv2.FONT_HERSHEY_PLAIN
         self.stats_fontscale = 1.0
+        self.stats_pos = (50,50)
+        self.nn_pos = (0,450)
+
 
     def set_env(self, env):
         #self.env = env
@@ -49,6 +52,8 @@ class TrainingBroadcast():
         print('==============TRAINABLE PARAMETERS================')
         for s in tf.trainable_variables():
             print(s)
+
+        print(tf.Session.graph_def)
         print('==================================================')
         self.have_nn_info = True
 
@@ -254,8 +259,8 @@ class TrainingBroadcast():
         self.show_stats(final)
         #self.show_inputimage(final,img)
         #self.show_actions(final)
-        self.show_neuralnetwork(final, img)
-        self.show_nn_weights2(final)
+        #self.show_neuralnetwork(final, img)
+        #self.show_nn_weights2(final)
 
         
 
