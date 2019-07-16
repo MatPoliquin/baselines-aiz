@@ -212,24 +212,34 @@ class TrainingBroadcast():
             #print(num_channels)
             x = 0
             #for channel in range(0,num_channels):
-            for channel in range(0,2):
+            for channel in range(0,20):
                 #print(channel)
                 img0 = weights[channel,:]
                 img = np.reshape(img0, (56,56))
                 #print(img.eval())
                 #img = img * 255.0
 
+                
+
+                img = (img + 1) / 2
+
+                #print(img)
+
                 img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
                 #img2 = []
                 img2 = cv2.normalize(img,None,0,255,cv2.NORM_MINMAX)
 
-                dim = (56*3,56*3)
-                upscaled = cv2.resize(img2, dim, interpolation=cv2.INTER_LINEAR)
+                dim = (56*4,56*4)
+                upscaled = cv2.resize(img2, dim, interpolation=cv2.INTER_NEAREST)
 
-                x=x+(56*3)
+                x = (channel % 3) * (56 * 4)
+                y = int(channel / 3) * (56 * 4)
+
+
+                #x=x+(56+3)
                 #print(channel)
                 #print(x)
-                y=0
+                #y=(channel / 10) * (56 + 3)
 
                 final[x:x+dim[0], y:y+dim[1]] = np.uint8(upscaled)
         #Show convnet 2
@@ -257,10 +267,10 @@ class TrainingBroadcast():
         final[0:dim[1],start_x:dim[0]+start_x] = upscaled
 
         self.show_stats(final)
-        #self.show_inputimage(final,img)
-        #self.show_actions(final)
-        #self.show_neuralnetwork(final, img)
-        #self.show_nn_weights2(final)
+        self.show_inputimage(final,img)
+        self.show_actions(final)
+        self.show_neuralnetwork(final, img)
+        self.show_nn_weights2(final)
 
         
 
