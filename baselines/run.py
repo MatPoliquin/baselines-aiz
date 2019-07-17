@@ -15,6 +15,8 @@ from importlib import import_module
 
 from baselines.common.vec_env.vec_normalize import VecNormalize
 
+from baselines.common.broadcast import broadcast
+
 
 
 try:
@@ -73,6 +75,8 @@ _game_envs['retro'] = {
 }
 
 
+
+
 def train(args, extra_args):
     env_type, env_id = get_env_type(args.env)
     print('env_type: {}'.format(env_type))
@@ -95,6 +99,10 @@ def train(args, extra_args):
             alg_kwargs['network'] = get_default_network(env_type)
 
     print('Training {} on {}:{} with arguments \n{}'.format(args.alg, env_type, env_id, alg_kwargs))
+
+    broadcast.alg = args.alg
+    broadcast.env_id = env_id
+    broadcast.args = alg_kwargs
 
     model = learn(
         env=env,

@@ -21,10 +21,14 @@ class TrainingBroadcast():
         self.stats_fontscale = 1.0
         self.stats_pos = (50,50)
         self.nn_pos = (0,450)
+        self.env_id = ''
+        self.alg = ''
+        self.args = []
 
 
     def set_env(self, env):
-        #self.env = env
+        #self.env = envNo module named 'tensorflow_datasets'
+
         #for i in range(0,36):
         #    print(self.env.unwrapped.get_action_meaning(i))
         return
@@ -87,16 +91,21 @@ class TrainingBroadcast():
     def show_probabilities(self, final):
         cv2.putText(final, "Probabilities", (0,200), self.font, 1.0, (255,255,255), 1 ,2)
 
-    def show_stats(self, final):
+    def show_stats(self, final, PosX, PosY):
         if math.isnan(broadcast.rewardmean):
             broadcast.rewardmean = 0;
         if math.isnan(broadcast.totaltimesteps):
             broadcast.totaltimesteps = 0;
 
-        cv2.putText(final, ("Algo: PPO2"), (0,50), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("Neural Net: CNN"), (0,100), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("Reward mean:%d" % broadcast.rewardmean), (0,150), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("Timesteps:%d" % broadcast.totaltimesteps), (0,200), self.font, 1.0, (255,255,255), 1 ,2)
+        PosX += 10
+        cv2.putText(final, ("%s" % self.env_id), (PosX,PosY+25), self.font, 2.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Algo: %s" % self.alg), (PosX,PosY+50), self.font, 2.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Neural Net: %s" % self.args['network']), (PosX,PosY+75), self.font, 2.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Reward mean: %d" % broadcast.rewardmean), (PosX,PosY+100), self.font, 2.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Timesteps: %d" % broadcast.totaltimesteps), (PosX,PosY+125), self.font, 2.0, (255,255,255), 1 ,2)
+
+
+        cv2.rectangle(final, (PosX-10, PosY), (350, 150), (0,0,255), 4)
 
     def show_inputimage(self, final, img):
         dim = (84,84)
@@ -111,10 +120,10 @@ class TrainingBroadcast():
     
 
 
-    def show_neuralnetwork(self, final, img):
+    def show_neuralnetwork(self, final, img, posX, posY):
         #Input layer
-        cv2.putText(final, ("Input"), (0,450), self.font, 0.5, (255,255,255), 1 ,2)
-        cv2.putText(final, ("84x84 pixels greyscale"), (0,475), self.font, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Input"), (posX, posY + 450), self.font, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("84x84 pixels greyscale"), (posX, posY + 475), self.font, 0.5, (255,255,255), 1 ,2)
 
         dim = (84,84)
         img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
@@ -126,41 +135,45 @@ class TrainingBroadcast():
         final[800:dim[1]+800,0:dim[0]] = input
 
         #Conv net layer 1
-        cv2.putText(final, ("Convnet 1"), (100,450), self.font, 0.5, (255,255,255), 1 ,2)
-        cv2.putText(final, ("32 filters"), (100,465), self.font, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Convnet 1"), (posX, posY), self.font, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("32 filters"), (posX, posY + 15), self.font, 0.5, (255,255,255), 1 ,2)
         #cv2.putText(final, ("8x8"), (100,480), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
         
-        cv2.rectangle(final, (100,480), (180, 560), (255,255,255))
+        cv2.rectangle(final, (posX + 100,posY + 480), (180, 560), (255,255,255))
 
         #Conv net layer 2
-        cv2.putText(final, ("Convnet 2"), (200,450), self.font, 0.5, (255,255,255), 1 ,2)
-        cv2.putText(final, ("64 filters"), (200,465), self.font, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Convnet 2"), (posX + 200, posY + 250), self.font, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("64 filters"), (posX + 00, posY + 265), self.font, 0.5, (255,255,255), 1 ,2)
         #cv2.putText(final, ("4x4"), (200,480), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
 
-        cv2.rectangle(final, (200, 450), (240, 490), (255,255,255))
+        cv2.rectangle(final, (posX + 200, posY + 450), (240, 490), (255,255,255))
 
         #Conv net layer 3
-        cv2.putText(final, ("Convnet 3"), (300,450), self.font, 0.5, (255,255,255), 1 ,2)
-        cv2.putText(final, ("64 filters"), (300,465), self.font, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Convnet 3"), (posX + 300, posY + 450), self.font, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("64 filters"), (posX + 300, posY + 465), self.font, 0.5, (255,255,255), 1 ,2)
         #cv2.putText(final, ("3x3"), (300,480), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
 
-        cv2.rectangle(final, (300, 450), (340, 480), (255,255,255))
+        cv2.rectangle(final, (posX + 300, posY + 250), (340, 480), (255,255,255))
 
         #Hidden layer
-        cv2.putText(final, ("Hidden Layer"), (400,450), self.font, 0.5, (255,255,255), 1 ,2)
-        cv2.putText(final, ("512 units"), (400,465), self.font, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Hidden Layer"), (posX + 400, posY + 250), self.font, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("512 units"), (posX + 400, posY + 265), self.font, 0.5, (255,255,255), 1 ,2)
 
-        cv2.circle(final, (400,480), 50, (255,255,255,255))
+        cv2.circle(final, (posX + 400,posY +280), 50, (255,255,255,255))
 
         #Output layer
-        cv2.putText(final, ("Output"), (600,450), self.font, 0.5, (255,255,255), 1 ,2)
-        cv2.putText(final, ("36 Actions"), (600,465), self.font, 0.5, (255,255,255), 1 ,2)
-        cv2.putText(final, ("Prob:%f" % self.action_prob), (600,480), self.font, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Output"), (posX + 600, posY + 250), self.font, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("36 Actions"), (posX + 600, posY + 265), self.font, 0.5, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Prob:%f" % self.action_prob), (posX + 600, posY + 280), self.font, 0.5, (255,255,255), 1 ,2)
         for i in range(0,len(self.action_meaning)):
             color = (255,255,255)
             if self.action == i:
                 color = (0,255,0)
-            cv2.putText(final, ("%s" % self.action_meaning[i]), (600,500 + i*15), self.font, 0.5, color, 1 ,2)
+            cv2.putText(final, ("%s" % self.action_meaning[i]), (posX + 600, posY + 300 + i*15), self.font, 0.5, color, 1 ,2)
+
+
+        #Draw Enclosing Rectangle
+        cv2.rectangle(final, (posX-10, posY), (700, 800), (0,255,0), 2)
 
     def show_nn_weights(self, final):
         #Show convnet 1
@@ -256,21 +269,18 @@ class TrainingBroadcast():
 
 
         h, w, c = img.shape
-   
         dim = (w * 4,h * 4)
         upscaled = cv2.resize(img, dim, interpolation=cv2.INTER_NEAREST)
-
         final = np.zeros(shape=self.final_dim, dtype=np.uint8)
-
         start_x = self.final_dim[1] - (w*4) -1
-
         final[0:dim[1],start_x:dim[0]+start_x] = upscaled
 
-        self.show_stats(final)
-        self.show_inputimage(final,img)
-        self.show_actions(final)
-        self.show_neuralnetwork(final, img)
-        self.show_nn_weights2(final)
+        self.show_stats(final, 0, 0)
+        #self.show_inputimage(final,img)
+        #self.show_actions(final)
+        self.show_neuralnetwork(final, img, 0, 200)
+        #self.show_nn_weights2(final)
+
 
         
 
