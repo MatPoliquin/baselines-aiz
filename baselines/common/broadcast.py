@@ -117,68 +117,42 @@ class TrainingBroadcast():
     def show_actions(self, final):
         cv2.putText(final, ("A:%s" % self.action_meaning[self.action]), (0,600), self.font, 0.5, (255,255,255), 1 ,2)
 
-    
 
-
-    def show_neuralnetwork(self, final, img, posX, posY):
-        #Input layer
-        cv2.putText(final, ("Input"), (posX, posY + 450), self.font, 0.5, (255,255,255), 1 ,2)
-        cv2.putText(final, ("84x84 pixels greyscale"), (posX, posY + 475), self.font, 0.5, (255,255,255), 1 ,2)
+    def DrawInputLayer(self, final, img, posX, posY):
+        cv2.putText(final, ("Input"), (posX, posY), self.font, 2.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("84x84 greyscale"), (posX, posY + 15), self.font, 1.0, (0,255,0), 1 ,2)
+        cv2.putText(final, ("Last 4 frames"), (posX, posY + 30), self.font, 1.0, (0, 255,0), 1 ,2)
 
         dim = (84,84)
         img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
         input = cv2.resize(img, dim, interpolation=cv2.INTER_NEAREST)
-        final[500:dim[1]+500,0:dim[0]] = input
-        final[600:dim[1]+600,0:dim[0]] = input
-        final[700:dim[1]+700,0:dim[0]] = input
-        final[800:dim[1]+800,0:dim[0]] = input
+        #final[500:dim[1]+500,0:dim[0]] = input
 
-        #Conv net layer 1
-        cv2.putText(final, ("Convnet 1"), (posX, posY), self.font, 0.5, (255,255,255), 1 ,2)
-        cv2.putText(final, ("32 filters"), (posX, posY + 15), self.font, 0.5, (255,255,255), 1 ,2)
-        #cv2.putText(final, ("8x8"), (100,480), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        imgPosX = posX
+        imgPosY = posY + 50
+        final[imgPosY:imgPosY+dim[1],imgPosX:imgPosX+dim[0]] = input
+        imgPosY += dim[1] + 50
+        cv2.putText(final, ("[...]"), (posX, imgPosY), self.font, 1.0, (0,255,0), 1 ,2)
+        #final[imgPosY:imgPosY+dim[1],imgPosX:imgPosX+dim[0]] = input
+        #imgPosY += dim[1] + 50
+        #final[imgPosY:imgPosY+dim[1],imgPosX:imgPosX+dim[0]] = input
+        #imgPosY += dim[1] + 50
+        #final[imgPosY:imgPosY+dim[1],imgPosX:imgPosX+dim[0]] = input
+    
+    def DrawConvNetLayer(self, final, posX, posY, numFilters, filterSize, name, param_name, input_dim):
+        cv2.putText(final, ("%s" % name), (posX, posY), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("%d filters" % (numFilters)), (posX, posY + 15), self.font, 1.0, (0,255,0), 1 ,2)
+        cv2.putText(final, ("%dx%d" % (filterSize, filterSize)), (posX, posY + 30), self.font, 1.0, (0,255,0), 1 ,2)
         
-        cv2.rectangle(final, (posX + 100,posY + 480), (180, 560), (255,255,255))
+        #cv2.rectangle(final, (posX + 100,posY + 480), (180, 560), (255,255,255))
 
-        #Conv net layer 2
-        cv2.putText(final, ("Convnet 2"), (posX + 200, posY + 250), self.font, 0.5, (255,255,255), 1 ,2)
-        cv2.putText(final, ("64 filters"), (posX + 00, posY + 265), self.font, 0.5, (255,255,255), 1 ,2)
-        #cv2.putText(final, ("4x4"), (200,480), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
+        #test = tf.get_variable(param_name)
+        #print(test)
+        #print(test.shape)
 
-        cv2.rectangle(final, (posX + 200, posY + 450), (240, 490), (255,255,255))
-
-        #Conv net layer 3
-        cv2.putText(final, ("Convnet 3"), (posX + 300, posY + 450), self.font, 0.5, (255,255,255), 1 ,2)
-        cv2.putText(final, ("64 filters"), (posX + 300, posY + 465), self.font, 0.5, (255,255,255), 1 ,2)
-        #cv2.putText(final, ("3x3"), (300,480), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 ,2)
-
-        cv2.rectangle(final, (posX + 300, posY + 250), (340, 480), (255,255,255))
-
-        #Hidden layer
-        cv2.putText(final, ("Hidden Layer"), (posX + 400, posY + 250), self.font, 0.5, (255,255,255), 1 ,2)
-        cv2.putText(final, ("512 units"), (posX + 400, posY + 265), self.font, 0.5, (255,255,255), 1 ,2)
-
-        cv2.circle(final, (posX + 400,posY +280), 50, (255,255,255,255))
-
-        #Output layer
-        cv2.putText(final, ("Output"), (posX + 600, posY + 250), self.font, 0.5, (255,255,255), 1 ,2)
-        cv2.putText(final, ("36 Actions"), (posX + 600, posY + 265), self.font, 0.5, (255,255,255), 1 ,2)
-        cv2.putText(final, ("Prob:%f" % self.action_prob), (posX + 600, posY + 280), self.font, 0.5, (255,255,255), 1 ,2)
-        for i in range(0,len(self.action_meaning)):
-            color = (255,255,255)
-            if self.action == i:
-                color = (0,255,0)
-            cv2.putText(final, ("%s" % self.action_meaning[i]), (posX + 600, posY + 300 + i*15), self.font, 0.5, color, 1 ,2)
-
-
-        #Draw Enclosing Rectangle
-        cv2.rectangle(final, (posX-10, posY), (700, 800), (0,255,0), 2)
-
-    def show_nn_weights(self, final):
-        #Show convnet 1
-        with tf.variable_scope('ppo2_model/pi/c1', reuse=True) as conv_scope:
-            hello = tf.get_variable('w', shape=[8,8,4,32])
+        with tf.variable_scope(param_name, reuse=True) as conv_scope:
+            hello = tf.get_variable('w', shape=[filterSize,filterSize,input_dim,numFilters])
             #print(hello)
             weights0 = tf.transpose(hello, [3,0,1,2])
             weights = weights0.eval()
@@ -187,11 +161,11 @@ class TrainingBroadcast():
             num_channels = hello.shape.dims[3]
             filter_w = hello.shape.dims[0]
             filter_h = hello.shape.dims[1]
-            #print(num_channels)
-            x = 0
-            #for channel in range(0,num_channels):
-            for channel in range(20,30):
-                #print(channel)
+
+            x = posX
+            y = posY + 40
+
+            for channel in range(0,10):
                 img = weights[channel,:,:,0]
                 #print(img.eval())
                 #img = img * 255.0
@@ -200,67 +174,97 @@ class TrainingBroadcast():
                 #img2 = []
                 img2 = cv2.normalize(img,None,0,255,cv2.NORM_MINMAX)
 
-                dim = (filter_w * 10,filter_h * 10)
+                dim = (filter_w*4,filter_h*4)
                 upscaled = cv2.resize(img2, dim, interpolation=cv2.INTER_NEAREST)
 
-                x=x+80
-                #print(channel)
-                #print(x)
-                y=0
+          
+                
 
-                final[x:x+dim[0], y:y+dim[1]] = np.uint8(upscaled)
+                final[y:y+dim[1], x:x+dim[0]] = upscaled
+                y+=dim[1] + 5
 
-    def show_nn_weights2(self, final):
-        #Show convnet 1
+            
+            cv2.putText(final, ("[...]"), (posX, y + 40), self.font, 1.0, (0,255,0), 1 ,2)
+        
+
+    def DrawHiddenLayer(self, final, posX, posY):
+        cv2.putText(final, ("Hidden Layer"), (posX, posY), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("512 units"), (posX, posY + 30), self.font, 1.0, (0,255,0), 1 ,2)
+        cv2.putText(final, ("Fully Connected"), (posX, posY + 15), self.font, 1.0, (0,255,0), 1 ,2)
+
         with tf.variable_scope('ppo2_model/pi/fc1', reuse=True) as conv_scope:
             hello = tf.get_variable('w', shape=[3136,512])
-            #print(hello)
             weights0 = tf.transpose(hello, [1,0])
             weights = weights0.eval()
-            #print(weights.shape)
-
-            #num_channels = hello.shape.dims[3]
-            #filter_w = hello.shape.dims[0]
-            #filter_h = hello.shape.dims[1]
-            #print(num_channels)
-            x = 0
-            #for channel in range(0,num_channels):
-            for channel in range(0,20):
+            x = posX
+            y = posY + 40
+            for channel in range(0,3):
                 #print(channel)
                 img0 = weights[channel,:]
                 img = np.reshape(img0, (56,56))
-                #print(img.eval())
-                #img = img * 255.0
-
-                
-
-                img = (img + 1) / 2
-
-                #print(img)
-
+            
+                '''
+                for img_x in range(0,img.shape[0]):
+                    for img_y in range(0,img.shape[1]):
+                        if img[img_x, img_y] > 0:
+                            img[img_x, img_y] = 255
+                        else:
+                            img[img_x, img_y] = 0
+                '''
                 img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
-                #img2 = []
                 img2 = cv2.normalize(img,None,0,255,cv2.NORM_MINMAX)
-
-                dim = (56*4,56*4)
+                dim = (56*2,56*2)
                 upscaled = cv2.resize(img2, dim, interpolation=cv2.INTER_NEAREST)
 
-                x = (channel % 3) * (56 * 4)
-                y = int(channel / 3) * (56 * 4)
+                #x = (channel % 3) * (56 * 4)
+                #y = int(channel / 3) * (56 * 4)
+                
+                final[y:y+dim[1], x:x+dim[0]] = upscaled
+                y+=dim[1] + 5
+
+            cv2.putText(final, ("[...]"), (posX, y + 40), self.font, 1.0, (0,255,0), 1 ,2)
+
+    def DrawOutputLayer(self, final, posX, posY):
+        cv2.putText(final, ("Output"), (posX, posY), self.font, 2.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("36 Actions"), (posX, posY + 15), self.font, 1.0, (0,255,0), 1 ,2)
+        cv2.putText(final, ("Prob:%f" % self.action_prob), (posX, posY + 30), self.font, 1.0, (0,255,0), 1 ,2)
+        for i in range(0,len(self.action_meaning)):
+            color = (255,255,255)
+            if self.action == i:
+                color = (0,255,0)
+            cv2.putText(final, ("%s" % self.action_meaning[i]), (posX, posY + 55 + i*15), self.font, 1.0, color, 1 ,2)
+
+        
+        
 
 
-                #x=x+(56+3)
-                #print(channel)
-                #print(x)
-                #y=(channel / 10) * (56 + 3)
+    def show_neuralnetwork(self, final, img, posX, posY):
 
-                final[x:x+dim[0], y:y+dim[1]] = np.uint8(upscaled)
-        #Show convnet 2
-        #with tf.variable_scope('ppo2_model/pi/c2', reuse=True) as conv_scope:
-        #    hello = tf.get_variable('w', shape=[4,4,32,64])
-        #    print(hello)
-        #    weights = hello.eval()
-        #    print(weights.shape)
+        #Input layer
+        self.DrawInputLayer(final, img, posX, posY)
+
+        #Conv net layer 1
+        self.DrawConvNetLayer(final, posX + 150, posY, 32, 8, "Conv Layer 1", 'ppo2_model/pi/c1',4)
+
+        #Conv net layer 2
+        self.DrawConvNetLayer(final, posX + 300, posY, 64, 4, "Conv Layer 2", 'ppo2_model/pi/c2',32)
+        
+        #Conv net layer 3
+        self.DrawConvNetLayer(final, posX + 450, posY, 64, 3, "Conv Layer 3", 'ppo2_model/pi/c3',64)
+        
+        #Hidden layer
+        self.DrawHiddenLayer(final, posX + 600, posY)
+
+        #Output layer
+        self.DrawOutputLayer(final, posX + 750, posY)
+
+
+        #Draw Enclosing Rectangle
+        #cv2.rectangle(final, (posX-10, posY), (700, 800), (0,255,0), 2)
+
+    
+
+    
 
     def set_gameframe(self, img):
 
