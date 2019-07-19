@@ -17,6 +17,7 @@ class TrainingBroadcast():
         self.action_meaning = []
         self.action_prob = 0
         self.have_nn_info = False
+        self.numNeuralNetParams = 0
         self.font = cv2.FONT_HERSHEY_PLAIN
         self.stats_fontscale = 1.0
         self.stats_pos = (50,50)
@@ -54,8 +55,16 @@ class TrainingBroadcast():
     def get_neuralnetwork_info(self):
         #print(tf.trainable_variables())
         print('==============TRAINABLE PARAMETERS================')
-        for s in tf.trainable_variables():
-            print(s)
+        total_params = 0
+        for v in tf.trainable_variables():
+            print(v)
+            shape = v.get_shape()
+            count = 1
+            for dim in shape:
+                count *= dim.value
+            total_params += count
+        print("Total Params:%d" % total_params)
+
 
         print(tf.Session.graph_def)
         print('==================================================')
@@ -282,7 +291,7 @@ class TrainingBroadcast():
         self.show_stats(final, 0, 0)
         #self.show_inputimage(final,img)
         #self.show_actions(final)
-        self.show_neuralnetwork(final, img, 0, 200)
+        #self.show_neuralnetwork(final, img, 0, 200)
         #self.show_nn_weights2(final)
 
 
