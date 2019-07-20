@@ -4,6 +4,7 @@ import math
 import numpy as np
 import math
 import tensorflow as tf
+import gc
 
 class TrainingBroadcast():
     def __init__(self):
@@ -25,6 +26,9 @@ class TrainingBroadcast():
         self.env_id = ''
         self.alg = ''
         self.args = []
+        self.UpdateNeuralNetFrameCount=0;
+        self.final_inited = False;
+        self.final = None
 
 
     def set_env(self, env):
@@ -126,6 +130,13 @@ class TrainingBroadcast():
     def show_actions(self, final):
         cv2.putText(final, ("A:%s" % self.action_meaning[self.action]), (0,600), self.font, 0.5, (255,255,255), 1 ,2)
 
+    
+    def DrawHardwareStats(self, final, posX, posY):
+        cv2.putText(final, ("INTEL E5 2667 v3 8C/16T"), (posX, posY), self.font, 1.0, (0,0,255), 1 ,2)
+        cv2.putText(final, ("NVIDIA P106-100 6GB"), (posX, posY + 15), self.font, 1.0, (0,255,0), 1 ,2)
+        cv2.putText(final, ("PCIE 1.0 16X"), (posX, posY + 30), self.font, 1.0, (0,255,0), 1 ,2)
+        cv2.putText(final, ("32 GB RAM"), (posX, posY + 45), self.font, 1.0, (0, 255,0), 1 ,2)
+
 
     def DrawInputLayer(self, final, img, posX, posY):
         cv2.putText(final, ("Input"), (posX, posY), self.font, 2.0, (255,255,255), 1 ,2)
@@ -201,7 +212,7 @@ class TrainingBroadcast():
         cv2.putText(final, ("512 units"), (posX, posY + 30), self.font, 1.0, (0,255,0), 1 ,2)
         cv2.putText(final, ("Fully Connected"), (posX, posY + 15), self.font, 1.0, (0,255,0), 1 ,2)
 
-        with tf.variable_scope('ppo2_model/pi/fc1', reuse=True) as conv_scope:
+        with tf.variable_scope('ppo2_model/pi/fc1', reuse=tf.AUTO_REUSE) as conv_scope:
             hello = tf.get_variable('w', shape=[3136,512])
             weights0 = tf.transpose(hello, [1,0])
             weights = weights0.eval()
@@ -209,8 +220,7 @@ class TrainingBroadcast():
             y = posY + 40
             for channel in range(0,3):
                 #print(channel)
-                img0 = weights[channel,:]
-                img = np.reshape(img0, (56,56))
+                img = np.reshape(weights[channel,:], (56,56))
             
                 '''
                 for img_x in range(0,img.shape[0]):
@@ -231,7 +241,15 @@ class TrainingBroadcast():
                 final[y:y+dim[1], x:x+dim[0]] = upscaled
                 y+=dim[1] + 5
 
-            cv2.putText(final, ("[...]"), (posX, y + 40), self.font, 1.0, (0,255,0), 1 ,2)
+            #del hello
+            #del weights0
+            #del weights
+            #del img
+            #del img2
+            #gc.collect()
+
+        cv2.putText(final, ("[...]"), (posX, y + 40), self.font, 1.0, (0,255,0), 1 ,2)
+        
 
     def DrawOutputLayer(self, final, posX, posY):
         cv2.putText(final, ("Output"), (posX, posY), self.font, 2.0, (255,255,255), 1 ,2)
@@ -252,26 +270,31 @@ class TrainingBroadcast():
         #Input layer
         self.DrawInputLayer(final, img, posX, posY)
 
-        #Conv net layer 1
-        self.DrawConvNetLayer(final, posX + 150, posY, 32, 8, "Conv Layer 1", 'ppo2_model/pi/c1',4)
 
-        #Conv net layer 2
-        self.DrawConvNetLayer(final, posX + 300, posY, 64, 4, "Conv Layer 2", 'ppo2_model/pi/c2',32)
-        
-        #Conv net layer 3
-        self.DrawConvNetLayer(final, posX + 450, posY, 64, 3, "Conv Layer 3", 'ppo2_model/pi/c3',64)
-        
-        #Hidden layer
-        self.DrawHiddenLayer(final, posX + 600, posY)
+        if self.UpdateNeuralNetFrameCount == 0:
+            #Conv net layer 1
+            self.DrawConvNetLayer(final, posX + 150, posY, 32, 8, "Conv Layer 1", 'ppo2_model/pi/c1',4)
 
+            #Conv net layer 2
+            self.DrawConvNetLayer(final, posX + 300, posY, 64, 4, "Conv Layer 2", 'ppo2_model/pi/c2',32)
+        
+            #Conv net layer 3
+            self.DrawConvNetLayer(final, posX + 450, posY, 64, 3, "Conv Layer 3", 'ppo2_model/pi/c3',64)
+        
+            #Hidden layer
+            self.DrawHiddenLayer(final, posX + 600, posY)
+
+            print('UPDATE CONV NETS!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            self.UpdateNeuralNetFrameCount = 1000
+
+        
         #Output layer
         self.DrawOutputLayer(final, posX + 750, posY)
-
 
         #Draw Enclosing Rectangle
         #cv2.rectangle(final, (posX-10, posY), (700, 800), (0,255,0), 2)
 
-    
+        self.UpdateNeuralNetFrameCount -= 1
 
     
 
@@ -284,20 +307,22 @@ class TrainingBroadcast():
         h, w, c = img.shape
         dim = (w * 4,h * 4)
         upscaled = cv2.resize(img, dim, interpolation=cv2.INTER_NEAREST)
-        final = np.zeros(shape=self.final_dim, dtype=np.uint8)
-        start_x = self.final_dim[1] - (w*4) -1
-        final[0:dim[1],start_x:dim[0]+start_x] = upscaled
 
-        self.show_stats(final, 0, 0)
+        if not self.final_inited:
+            self.final = np.zeros(shape=self.final_dim, dtype=np.uint8)
+            print('final inited!!!!!!!!!!!!!!!!!!!!!')
+            self.final_inited = True
+
+        start_x = self.final_dim[1] - (w*4) -1
+        self.final[0:dim[1],start_x:dim[0]+start_x] = upscaled
+
+        self.show_stats(self.final, 0, 0)
+        self.DrawHardwareStats(self.final, 950, 950)
         #self.show_inputimage(final,img)
         #self.show_actions(final)
-        #self.show_neuralnetwork(final, img, 0, 200)
-        #self.show_nn_weights2(final)
+        self.show_neuralnetwork(self.final, img, 0, 200)
 
-
-        
-
-        return final
+        return self.final
 
 
 broadcast = TrainingBroadcast()
