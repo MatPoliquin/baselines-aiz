@@ -5,6 +5,7 @@ import numpy as np
 import math
 import tensorflow as tf
 import gc
+from py3nvml.py3nvml import *
 
 class TrainingBroadcast():
     def __init__(self):
@@ -29,6 +30,12 @@ class TrainingBroadcast():
         self.UpdateNeuralNetFrameCount=0;
         self.final_inited = False;
         self.final = None
+        self.total_params = 0
+        
+
+        nvmlInit()
+        #TODO determine which GPU is used
+        self.gpu_handle = nvmlDeviceGetHandleByIndex(0)
 
 
     def set_env(self, env):
@@ -59,15 +66,15 @@ class TrainingBroadcast():
     def get_neuralnetwork_info(self):
         #print(tf.trainable_variables())
         print('==============TRAINABLE PARAMETERS================')
-        total_params = 0
+        self.total_params = 0
         for v in tf.trainable_variables():
             print(v)
             shape = v.get_shape()
             count = 1
             for dim in shape:
                 count *= dim.value
-            total_params += count
-        print("Total Params:%d" % total_params)
+            self.total_params += count
+        print("Total Params:%d" % self.total_params)
 
 
         print(tf.Session.graph_def)
@@ -132,10 +139,19 @@ class TrainingBroadcast():
 
     
     def DrawHardwareStats(self, final, posX, posY):
-        cv2.putText(final, ("INTEL E5 2667 v3 8C/16T"), (posX, posY), self.font, 1.0, (0,0,255), 1 ,2)
-        cv2.putText(final, ("NVIDIA P106-100 6GB"), (posX, posY + 15), self.font, 1.0, (0,255,0), 1 ,2)
-        cv2.putText(final, ("PCIE 1.0 16X"), (posX, posY + 30), self.font, 1.0, (0,255,0), 1 ,2)
-        cv2.putText(final, ("32 GB RAM"), (posX, posY + 45), self.font, 1.0, (0, 255,0), 1 ,2)
+        #num_gpus = nvmlDeviceGetCount()
+        #print("NUM GPUS: %d" % nvmlDeviceGetCount())
+
+
+        nv_util = nvmlDeviceGetUtilizationRates(self.gpu_handle)
+        #print("UTILS: %d" % nv_util.gpu)
+
+        self.clear_screen(posX, posY, 100, 200)
+
+        cv2.putText(final, ("INTEL E5 2667 v3 8C/16T"), (posX, posY), self.font, 1.0, (0,255,255), 1 ,2)
+        cv2.putText(final, ("NVIDIA P106-100 6GB: %d" % nv_util.gpu), (posX, posY + 15), self.font, 1.0, (0,255,255), 1 ,2)
+        cv2.putText(final, ("PCIE 1.0 16X"), (posX, posY + 30), self.font, 1.0, (0,255,255), 1 ,2)
+        cv2.putText(final, ("32 GB RAM"), (posX, posY + 45), self.font, 1.0, (0, 255,255), 1 ,2)
 
 
     def DrawInputLayer(self, final, img, posX, posY):
@@ -296,7 +312,17 @@ class TrainingBroadcast():
 
         self.UpdateNeuralNetFrameCount -= 1
 
-    
+    def clear_screen(self, posX, posY, dimX, dimY):
+
+        dim = (dimX, dimY, 3)
+        clear = np.zeros(shape=dim, dtype=np.uint8)
+
+        #print(posX)
+        #print(posY)
+        #print(dim[0])
+        #print(dim[1])
+        self.final[posX:posX+dim[0],posY:posY+dim[1]] = clear
+
 
     def set_gameframe(self, img):
 
@@ -314,13 +340,12 @@ class TrainingBroadcast():
             self.final_inited = True
 
         start_x = self.final_dim[1] - (w*4) -1
-        self.final[0:dim[1],start_x:dim[0]+start_x] = upscaled
+        start_y = self.final_dim[0] - (h*4) -1
+        self.final[start_y:dim[1]+start_y,start_x:dim[0]+start_x] = upscaled
 
         self.show_stats(self.final, 0, 0)
-        self.DrawHardwareStats(self.final, 950, 950)
-        #self.show_inputimage(final,img)
-        #self.show_actions(final)
-        self.show_neuralnetwork(self.final, img, 0, 200)
+        self.DrawHardwareStats(self.final, 950, 0)
+        self.show_neuralnetwork(self.final, img, 0, 475)
 
         return self.final
 
