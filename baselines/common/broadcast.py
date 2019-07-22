@@ -323,6 +323,53 @@ class TrainingBroadcast():
         #print(dim[1])
         self.final[posX:posX+dim[0],posY:posY+dim[1]] = clear
 
+    def draw_graph(self, posX, posY, width, height, y_data):
+        x = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32] 
+        # corresponding y axis values 
+        #y = [2,4,1]
+
+
+  
+        # plotting the points  
+        #plt.plot(x, y_data) 
+  
+        # naming the x axis 
+        #plt.xlabel('Timesteps') 
+        # naming the y axis 
+        #plt.ylabel('Reward') 
+  
+        # giving a title to my graph 
+        plt.title('Reward')
+  
+        # function to show the plot 
+        #plt.show()
+
+        fig, ax = plt.subplots()
+
+        
+
+
+        fig.xlabel('Timesteps') 
+        # naming the y axis 
+        fig.ylabel('Reward') 
+
+        fig.plot(x, y_data)
+  
+        # giving a title to my graph 
+        #plt.title('Reward')
+
+        
+
+        #fig.canvas.draw()
+        width, height = fig.canvas.get_width_height()
+        #image = np.fromstring(fig.canvas.tostring_rgb(), dtype='uint8').reshape(height, width, 3)
+        buffer, size = fig.canvas.print_to_buffer()
+        image = np.fromstring(buffer, dtype='uint8').reshape(height, width, 4)
+        #print(buffer)
+        self.final[posY:posY+height,posX:posX+width] = image[:,:,0:3]
+
+
+        plt.close()
 
     def set_gameframe(self, img):
 
@@ -346,6 +393,12 @@ class TrainingBroadcast():
         self.show_stats(self.final, 0, 0)
         self.DrawHardwareStats(self.final, 950, 0)
         self.show_neuralnetwork(self.final, img, 0, 475)
+
+        y_data =[5] * 32
+
+        #print(y_data)
+
+        self.draw_graph(0,0,100,100, y_data)
 
         return self.final
 
