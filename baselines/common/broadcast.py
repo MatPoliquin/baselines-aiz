@@ -328,15 +328,15 @@ class TrainingBroadcast():
         # corresponding y axis values 
         #y = [2,4,1]
 
-
+        fig = plt.figure(0)
   
         # plotting the points  
-        #plt.plot(x, y_data) 
+        plt.plot(x, y_data) 
   
         # naming the x axis 
-        #plt.xlabel('Timesteps') 
+        plt.xlabel('Timesteps') 
         # naming the y axis 
-        #plt.ylabel('Reward') 
+        plt.ylabel('Reward') 
   
         # giving a title to my graph 
         plt.title('Reward')
@@ -344,19 +344,10 @@ class TrainingBroadcast():
         # function to show the plot 
         #plt.show()
 
-        fig, ax = plt.subplots()
+        #fig, ax = plt.subplots()
 
         
-
-
-        fig.xlabel('Timesteps') 
-        # naming the y axis 
-        fig.ylabel('Reward') 
-
-        fig.plot(x, y_data)
-  
-        # giving a title to my graph 
-        #plt.title('Reward')
+        fig.canvas.draw()
 
         
 
