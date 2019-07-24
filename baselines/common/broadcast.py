@@ -31,6 +31,7 @@ class TrainingBroadcast():
         self.final_inited = False;
         self.final = None
         self.total_params = 0
+        self.rewardmeanList = []
         
 
         nvmlInit()
@@ -110,6 +111,9 @@ class TrainingBroadcast():
 
     def show_probabilities(self, final):
         cv2.putText(final, "Probabilities", (0,200), self.font, 1.0, (255,255,255), 1 ,2)
+
+    def LogRewardMean(self, rew):
+        self.rewardmeanList.append(rew)
 
     def show_stats(self, final, PosX, PosY):
         if math.isnan(broadcast.rewardmean):
@@ -323,23 +327,56 @@ class TrainingBroadcast():
         #print(dim[1])
         self.final[posX:posX+dim[0],posY:posY+dim[1]] = clear
 
-    def draw_graph(self, posX, posY, width, height, y_data):
-        x = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32] 
+    def DrawRewardGraph(self, posX, posY, width, height):
+        fig = plt.figure(0)
+  
+        plt.plot(self.rewardmeanList)
+
+        numYData = len(self.rewardmeanList)
+        plt.xlim([0,numYData])
+  
+        plt.xlabel('Timesteps') 
+        plt.ylabel('Reward') 
+        #plt.title('Reward')
+        #plt.show()
+
+        ax = plt.gca()
+        ax.xaxis.label.set_color('red')
+        ax.set_facecolor("lightslategray")
+
+        
+        #draw buffer
+        fig.canvas.draw()
+        width, height = fig.canvas.get_width_height()
+        buffer, size = fig.canvas.print_to_buffer()
+        image = np.fromstring(buffer, dtype='uint8').reshape(height, width, 4)
+        self.final[posY:posY+height,posX:posX+width] = image[:,:,0:3]
+
+        plt.close()
+
+    def DrawGPUGraph(self, posX, posY, width, height):
+        #x = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32] 
         # corresponding y axis values 
         #y = [2,4,1]
 
-        fig = plt.figure(0)
+        fig = plt.figure(0, facecolor='b')
   
         # plotting the points  
-        plt.plot(x, y_data) 
-  
+        plt.plot(self.rewardmeanList)
+
+        numYData = len(self.rewardmeanList)
+        plt.xlim([0,numYData])
+
+        plt.axes.set_facecolor('b')
+
+        #fig.patch.set_facecolor('black')
         # naming the x axis 
-        plt.xlabel('Timesteps') 
+        #plt.xlabel('Timesteps') 
         # naming the y axis 
-        plt.ylabel('Reward') 
+        #plt.ylabel('Reward') 
   
         # giving a title to my graph 
-        plt.title('Reward')
+        #plt.title('Reward')
   
         # function to show the plot 
         #plt.show()
@@ -385,11 +422,11 @@ class TrainingBroadcast():
         self.DrawHardwareStats(self.final, 950, 0)
         self.show_neuralnetwork(self.final, img, 0, 475)
 
-        y_data =[5] * 32
+        #y_data =[5] * 32
 
         #print(y_data)
 
-        self.draw_graph(0,0,100,100, y_data)
+        self.DrawRewardGraph(0,0,100,100)
 
         return self.final
 
