@@ -35,6 +35,7 @@ class TrainingBroadcast():
         self.final = None
         self.total_params = 0
         self.rewardmeanList = []
+        self.updateRewardGraph = True
         
 
         nvmlInit()
@@ -50,7 +51,7 @@ class TrainingBroadcast():
         print(path)
         img = Image.open(path)    
         dim = (200,200)
-        self.logo = cv2.resize(np.array(img), dim, interpolation=cv2.INTER_LINEAR)
+        self.logo = cv2.resize(np.array(img), dim, interpolation=cv2.INTER_AREA)
 
         #print(self.logo)
         #image.show()
@@ -131,22 +132,24 @@ class TrainingBroadcast():
 
     def LogRewardMean(self, rew):
         self.rewardmeanList.append(rew)
+        self.updateRewardGraph = True
 
-    def show_stats(self, final, PosX, PosY):
+    def DrawTrainingInfo(self, final, PosX, PosY):
         if math.isnan(broadcast.rewardmean):
             broadcast.rewardmean = 0;
         if math.isnan(broadcast.totaltimesteps):
             broadcast.totaltimesteps = 0;
 
         PosX += 10
-        cv2.putText(final, ("%s" % self.env_id), (PosX,PosY+25), self.font, 2.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("Algo: %s" % self.alg), (PosX,PosY+50), self.font, 2.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("Neural Net: %s" % self.args['network']), (PosX,PosY+75), self.font, 2.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("Reward mean: %d" % broadcast.rewardmean), (PosX,PosY+100), self.font, 2.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("Timesteps: %d" % broadcast.totaltimesteps), (PosX,PosY+125), self.font, 2.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Game:             %s" % self.env_id), (PosX,PosY+15), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Algo:             %s" % self.alg), (PosX,PosY+30), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Neural Net:       %s" % self.args['network']), (PosX,PosY+75), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Trainable Params: %s" % self.numNeuralNetParams), (PosX,PosY+100), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Reward mean:      %d" % broadcast.rewardmean), (PosX,PosY+125), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("Timesteps:        %d" % broadcast.totaltimesteps), (PosX,PosY+150), self.font, 1.0, (255,255,255), 1 ,2)
 
 
-        cv2.rectangle(final, (PosX-10, PosY), (350, 150), (0,0,255), 4)
+        
 
     def show_inputimage(self, final, img):
         dim = (84,84)
@@ -159,18 +162,18 @@ class TrainingBroadcast():
         cv2.putText(final, ("A:%s" % self.action_meaning[self.action]), (0,600), self.font, 0.5, (255,255,255), 1 ,2)
 
     
-    def DrawHardwareStats(self, final, posX, posY):
+    def DrawHardwareInfo(self, final, posX, posY):
         #num_gpus = nvmlDeviceGetCount()
         #print("NUM GPUS: %d" % nvmlDeviceGetCount())
 
 
-        nv_util = nvmlDeviceGetUtilizationRates(self.gpu_handle)
+        #nv_util = nvmlDeviceGetUtilizationRates(self.gpu_handle)
         #print("UTILS: %d" % nv_util.gpu)
 
-        self.clear_screen(posX, posY, 100, 200)
+        #self.clear_screen(posX, posY, 100, 200)
 
         cv2.putText(final, ("INTEL E5 2667 v3 8C/16T"), (posX, posY), self.font, 1.0, (0,255,255), 1 ,2)
-        cv2.putText(final, ("NVIDIA P106-100 6GB: %d" % nv_util.gpu), (posX, posY + 15), self.font, 1.0, (0,255,255), 1 ,2)
+        cv2.putText(final, ("NVIDIA P106-100 6GB"), (posX, posY + 15), self.font, 1.0, (0,255,255), 1 ,2)
         cv2.putText(final, ("PCIE 1.0 16X"), (posX, posY + 30), self.font, 1.0, (0,255,255), 1 ,2)
         cv2.putText(final, ("32 GB RAM"), (posX, posY + 45), self.font, 1.0, (0, 255,255), 1 ,2)
 
@@ -302,7 +305,7 @@ class TrainingBroadcast():
         
 
 
-    def show_neuralnetwork(self, final, img, posX, posY):
+    def DrawNeuralNetwork(self, final, img, posX, posY):
 
         #Input layer
         self.DrawInputLayer(final, img, posX, posY)
@@ -384,7 +387,7 @@ class TrainingBroadcast():
         #plt.title('Reward')
         #plt.show()
  
-        self.rewardmeanList.append(10000)
+        #self.rewardmeanList.append(10000)
 
         ax = plt.gca()
         ax.set_facecolor("black")
@@ -492,18 +495,25 @@ class TrainingBroadcast():
         start_y = self.final_dim[0] - (h*4) -1
         self.final[start_y:dim[1]+start_y,start_x:dim[0]+start_x] = upscaled
 
-        self.show_stats(self.final, 0, 0)
-        self.DrawHardwareStats(self.final, 950, 0)
-        self.show_neuralnetwork(self.final, img, 0, 475)
+
+        self.DrawLogo(0,0,self.logo.shape[0], self.logo.shape[1])
+        self.DrawHardwareInfo(self.final, 200, 15)
+        cv2.rectangle(self.final, (0, 0), (425, 200), (0,0,255), 4)
+
+        self.DrawTrainingInfo(self.final, 0, 220)
+        cv2.rectangle(self.final, (0, 215), (425, 425), (0,255,0), 4)
+        
+        self.DrawNeuralNetwork(self.final, img, 0, 475)
 
         #y_data =[5] * 32
 
         #print(y_data)
 
-        self.DrawRewardGraph(400,50,430,300)
+        if self.updateRewardGraph:
+            self.DrawRewardGraph(400,50,430,300)
+            self.updateRewardGraph = False
 
-        self.DrawLogo(0,0,self.logo.shape[0], self.logo.shape[1])
-
+        
         return self.final
 
 
