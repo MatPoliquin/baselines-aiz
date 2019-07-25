@@ -36,6 +36,9 @@ class TrainingBroadcast():
         self.total_params = 0
         self.rewardmeanList = []
         self.updateRewardGraph = True
+        self.gpuUtilStat = [0] * 200
+        self.pcieUtilStat = [0] * 200
+        self.UpdatePerfStatsFrameCount=0;
         
 
         nvmlInit()
@@ -141,12 +144,14 @@ class TrainingBroadcast():
             broadcast.totaltimesteps = 0;
 
         PosX += 10
-        cv2.putText(final, ("Game:             %s" % self.env_id), (PosX,PosY+15), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("Algo:             %s" % self.alg), (PosX,PosY+30), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("Neural Net:       %s" % self.args['network']), (PosX,PosY+75), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("Trainable Params: %s" % self.numNeuralNetParams), (PosX,PosY+100), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("Reward mean:      %d" % broadcast.rewardmean), (PosX,PosY+125), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("Timesteps:        %d" % broadcast.totaltimesteps), (PosX,PosY+150), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("GAME:                 %s" % self.env_id), (PosX,PosY+15), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("ALGO:                 %s" % self.alg), (PosX,PosY+30), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("NEURAL NET:          %s" % self.args['network']), (PosX,PosY+45), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("TRAINABLE PARAMS:   %d float32" % self.total_params), (PosX,PosY+60), self.font, 1.0, (255,255,255), 1 ,2)
+        #cv2.putText(final, ("REWARD MEAN:        %d" % broadcast.rewardmean), (PosX,PosY+75), self.font, 1.0, (255,255,255), 1 ,2)
+
+        self.clear_screen(PosX + 100, PosY+75, 200, 15)
+        cv2.putText(final, ("TIMESTEPS:          %d" % broadcast.totaltimesteps), (PosX,PosY+90), self.font, 1.0, (255,255,255), 1 ,2)
 
 
         
@@ -174,8 +179,14 @@ class TrainingBroadcast():
 
         cv2.putText(final, ("INTEL E5 2667 v3 8C/16T"), (posX, posY), self.font, 1.0, (0,255,255), 1 ,2)
         cv2.putText(final, ("NVIDIA P106-100 6GB"), (posX, posY + 15), self.font, 1.0, (0,255,255), 1 ,2)
-        cv2.putText(final, ("PCIE 1.0 16X"), (posX, posY + 30), self.font, 1.0, (0,255,255), 1 ,2)
-        cv2.putText(final, ("32 GB RAM"), (posX, posY + 45), self.font, 1.0, (0, 255,255), 1 ,2)
+        cv2.putText(final, ("PCIE 1.1 16X"), (posX, posY + 30), self.font, 1.0, (0,255,255), 1 ,2)
+        cv2.putText(final, ("32 GB DDR4"), (posX, posY + 45), self.font, 1.0, (0, 255,255), 1 ,2)
+
+        posY += 100
+        cv2.putText(final, ("OPENAI BASELINES 0.1.6"), (posX, posY), self.font, 1.0, (255,255,0), 1 ,2)
+        cv2.putText(final, ("TENSORFLOW 1.14"), (posX, posY + 15), self.font, 1.0, (255,255,0), 1 ,2)
+        cv2.putText(final, ("CUDA 10"), (posX, posY + 30), self.font, 1.0, (255,255,0), 1 ,2)
+   
 
 
     def DrawInputLayer(self, final, img, posX, posY):
@@ -294,7 +305,7 @@ class TrainingBroadcast():
     def DrawOutputLayer(self, final, posX, posY):
         cv2.putText(final, ("Output"), (posX, posY), self.font, 2.0, (255,255,255), 1 ,2)
         cv2.putText(final, ("36 Actions"), (posX, posY + 15), self.font, 1.0, (0,255,0), 1 ,2)
-        cv2.putText(final, ("Prob:%f" % self.action_prob), (posX, posY + 30), self.font, 1.0, (0,255,0), 1 ,2)
+        #cv2.putText(final, ("Prob:%f" % self.action_prob), (posX, posY + 30), self.font, 1.0, (0,255,0), 1 ,2)
         for i in range(0,len(self.action_meaning)):
             color = (255,255,255)
             if self.action == i:
@@ -336,58 +347,35 @@ class TrainingBroadcast():
 
         self.UpdateNeuralNetFrameCount -= 1
 
-    def clear_screen(self, posX, posY, dimX, dimY):
+    def clear_screen(self, posX, posY, width, height):
 
-        dim = (dimX, dimY, 3)
-        clear = np.zeros(shape=dim, dtype=np.uint8)
+        #dim = (dimX, dimY, 3)
+        #clear = np.zeros(shape=dim, dtype=np.uint8)
 
         #print(posX)
         #print(posY)
         #print(dim[0])
         #print(dim[1])
-        self.final[posX:posX+dim[0],posY:posY+dim[1]] = clear
+        self.final[posY:posY+height,posX:posX+width] = [0, 0, 0]
 
     def DrawRewardGraph(self, posX, posY, width, height):
         fig = plt.figure(0)
 
-        #mpl.rcParams['lines.linewidth'] = 4
-        #mpl.rcParams['lines.color'] = 'g'
-  
-        
-
-        #plt.style.
-
         plt.plot(self.rewardmeanList, color="green")
 
-        #plt.style.context('dark_background')
+        plt.title(("Reward Mean: %d" % broadcast.rewardmean), color='green')
 
         fig.set_facecolor('black')
 
         numYData = len(self.rewardmeanList)
         plt.xlim([0,numYData])
-        #plt.tight_layout()
+        plt.tight_layout()
   
         plt.grid(True)
         plt.rc('grid', color='w', linestyle='solid')
 
 
-        #fig.patch.set_visible(False)
-
-        
-
         fig.set_size_inches(width/80, height/80, forward=True)
-
-        
-        
-
-        #plt.box(False)
-
-        #plt.xlabel('Timesteps') 
-        #plt.ylabel('Reward') 
-        #plt.title('Reward')
-        #plt.show()
- 
-        #self.rewardmeanList.append(10000)
 
         ax = plt.gca()
         ax.set_facecolor("black")
@@ -395,27 +383,9 @@ class TrainingBroadcast():
         ax.tick_params(axis='x', colors='green')
         ax.tick_params(axis='y', colors='green')
 
-        #for child in ax.get_children():
-        #    if isinstance(child, mpl.spines.Spine):
-        #        child.set_color('white')
+        ax.get_xaxis().set_ticks([])
 
 
-        #ax.spines['top'].set_visible(False)
-        #ax.spines['right'].set_visible(False)
-        #ax.spines['bottom'].set_visible(False)
-        #ax.spines['left'].set_visible(False)
-        #for spine in plt.gca().spines.values():
-        #    spine.set_visible(False)
-
-        #ax.xaxis.label.set_color('red')
-        #ax.set_facecolor("black")
-        #ax.set_color("green")
-        #ax.tick_params(axis='x', colors='blue')
-        #ax.tick_params(axis='y', colors='red')
-
-        #ax.lines.set_color('g')
-
-        
         #draw buffer
         fig.canvas.draw()
         width, height = fig.canvas.get_width_height()
@@ -425,50 +395,44 @@ class TrainingBroadcast():
 
         plt.close()
 
-    def DrawGPUGraph(self, posX, posY, width, height):
-        #x = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32] 
-        # corresponding y axis values 
-        #y = [2,4,1]
+    def DrawGPUGraph(self, posX, posY, width, height, y_data, y_limit, title):
+        fig = plt.figure(0)
 
-        fig = plt.figure(0, facecolor='b')
-  
-        # plotting the points  
-        plt.plot(self.rewardmeanList)
+        plt.plot(y_data, color="green")
 
-        numYData = len(self.rewardmeanList)
+        fig.set_facecolor('black')
+
+        plt.title(title, color='green')
+
+        numYData = len(y_data)
         plt.xlim([0,numYData])
 
-        plt.axes.set_facecolor('b')
-
-        plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
-
-        #fig.patch.set_facecolor('black')
-        # naming the x axis 
-        #plt.xlabel('Timesteps') 
-        # naming the y axis 
-        #plt.ylabel('Reward') 
+        if y_limit:
+            plt.ylim([0,y_limit])
+        #plt.tight_layout()
   
-        # giving a title to my graph 
-        #plt.title('Reward')
-  
-        # function to show the plot 
-        #plt.show()
+        plt.grid(True)
+        plt.rc('grid', color='w', linestyle='solid')
 
-        #fig, ax = plt.subplots()
 
-        
+        fig.set_size_inches(width/80, height/80, forward=True)
+
+        ax = plt.gca()
+        ax.set_facecolor("black")
+
+
+        ax.tick_params(axis='x', colors='green')
+        ax.tick_params(axis='y', colors='green')
+
+        ax.get_xaxis().set_ticks([])
+
+
+        #draw buffer
         fig.canvas.draw()
-
-        
-
-        #fig.canvas.draw()
         width, height = fig.canvas.get_width_height()
-        #image = np.fromstring(fig.canvas.tostring_rgb(), dtype='uint8').reshape(height, width, 3)
         buffer, size = fig.canvas.print_to_buffer()
         image = np.fromstring(buffer, dtype='uint8').reshape(height, width, 4)
-        #print(buffer)
         self.final[posY:posY+height,posX:posX+width] = image[:,:,0:3]
-
 
         plt.close()
 
@@ -497,7 +461,7 @@ class TrainingBroadcast():
 
 
         self.DrawLogo(0,0,self.logo.shape[0], self.logo.shape[1])
-        self.DrawHardwareInfo(self.final, 200, 15)
+        self.DrawHardwareInfo(self.final, 200, 45)
         cv2.rectangle(self.final, (0, 0), (425, 200), (0,0,255), 4)
 
         self.DrawTrainingInfo(self.final, 0, 220)
@@ -510,9 +474,28 @@ class TrainingBroadcast():
         #print(y_data)
 
         if self.updateRewardGraph:
-            self.DrawRewardGraph(400,50,430,300)
+            self.DrawRewardGraph(460,50,400,300)
             self.updateRewardGraph = False
 
+
+        # Draw Performance Stats
+        nv_util = nvmlDeviceGetUtilizationRates(self.gpu_handle)
+        self.gpuUtilStat.append(nv_util.gpu)
+        pcie_tx = nvmlDeviceGetPcieThroughput(self.gpu_handle,NVML_PCIE_UTIL_TX_BYTES)
+        self.pcieUtilStat.append(pcie_tx / 8)
+
+        #numGPUStats = len(gpuUtilStat)
+        
+        #keep at 200 samples
+        self.gpuUtilStat = self.gpuUtilStat[1:len(self.gpuUtilStat)]
+        self.pcieUtilStat = self.pcieUtilStat[1:len(self.pcieUtilStat)]
+
+        if self.UpdatePerfStatsFrameCount == 0:
+            self.DrawGPUGraph(950, 30, 300, 125, self.gpuUtilStat, 100, 'GPU USAGE %')
+            self.DrawGPUGraph(1400, 30, 300, 125, self.pcieUtilStat, None, 'PCIE USAGE MB/S')
+            self.UpdatePerfStatsFrameCount = 30
+
+        self.UpdatePerfStatsFrameCount -= 1
         
         return self.final
 
