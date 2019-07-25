@@ -1,11 +1,14 @@
 import cv2
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import math
 import numpy as np
 import math
 import tensorflow as tf
 import gc
 from py3nvml.py3nvml import *
+from PIL import Image
+import os
 
 class TrainingBroadcast():
     def __init__(self):
@@ -38,6 +41,20 @@ class TrainingBroadcast():
         #TODO determine which GPU is used
         self.gpu_handle = nvmlDeviceGetHandleByIndex(0)
 
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        print('=============DIR PATH================')
+        print(dir_path)
+    
+
+        path = os.path.join(dir_path, '../../data/broadcast_logo.jpg')
+        print(path)
+        img = Image.open(path)    
+        dim = (200,200)
+        self.logo = cv2.resize(np.array(img), dim, interpolation=cv2.INTER_LINEAR)
+
+        #print(self.logo)
+        #image.show()
+        
 
     def set_env(self, env):
         #self.env = envNo module named 'tensorflow_datasets'
@@ -329,20 +346,71 @@ class TrainingBroadcast():
 
     def DrawRewardGraph(self, posX, posY, width, height):
         fig = plt.figure(0)
+
+        #mpl.rcParams['lines.linewidth'] = 4
+        #mpl.rcParams['lines.color'] = 'g'
   
-        plt.plot(self.rewardmeanList)
+        
+
+        #plt.style.
+
+        plt.plot(self.rewardmeanList, color="green")
+
+        #plt.style.context('dark_background')
+
+        fig.set_facecolor('black')
 
         numYData = len(self.rewardmeanList)
         plt.xlim([0,numYData])
+        #plt.tight_layout()
   
-        plt.xlabel('Timesteps') 
-        plt.ylabel('Reward') 
+        plt.grid(True)
+        plt.rc('grid', color='w', linestyle='solid')
+
+
+        #fig.patch.set_visible(False)
+
+        
+
+        fig.set_size_inches(width/80, height/80, forward=True)
+
+        
+        
+
+        #plt.box(False)
+
+        #plt.xlabel('Timesteps') 
+        #plt.ylabel('Reward') 
         #plt.title('Reward')
         #plt.show()
+ 
+        self.rewardmeanList.append(10000)
 
         ax = plt.gca()
-        ax.xaxis.label.set_color('red')
-        ax.set_facecolor("lightslategray")
+        ax.set_facecolor("black")
+
+        ax.tick_params(axis='x', colors='green')
+        ax.tick_params(axis='y', colors='green')
+
+        #for child in ax.get_children():
+        #    if isinstance(child, mpl.spines.Spine):
+        #        child.set_color('white')
+
+
+        #ax.spines['top'].set_visible(False)
+        #ax.spines['right'].set_visible(False)
+        #ax.spines['bottom'].set_visible(False)
+        #ax.spines['left'].set_visible(False)
+        #for spine in plt.gca().spines.values():
+        #    spine.set_visible(False)
+
+        #ax.xaxis.label.set_color('red')
+        #ax.set_facecolor("black")
+        #ax.set_color("green")
+        #ax.tick_params(axis='x', colors='blue')
+        #ax.tick_params(axis='y', colors='red')
+
+        #ax.lines.set_color('g')
 
         
         #draw buffer
@@ -368,6 +436,8 @@ class TrainingBroadcast():
         plt.xlim([0,numYData])
 
         plt.axes.set_facecolor('b')
+
+        plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
 
         #fig.patch.set_facecolor('black')
         # naming the x axis 
@@ -399,6 +469,10 @@ class TrainingBroadcast():
 
         plt.close()
 
+    def DrawLogo(self, posX, posY, width, height):
+
+        self.final[posY:posY+height,posX:posX+width] = self.logo
+
     def set_gameframe(self, img):
 
         if not self.have_nn_info:
@@ -426,7 +500,9 @@ class TrainingBroadcast():
 
         #print(y_data)
 
-        self.DrawRewardGraph(0,0,100,100)
+        self.DrawRewardGraph(400,50,430,300)
+
+        self.DrawLogo(0,0,self.logo.shape[0], self.logo.shape[1])
 
         return self.final
 
