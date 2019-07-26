@@ -491,7 +491,7 @@ class TrainingBroadcast():
         if not self.have_nn_info:
             self.get_neuralnetwork_info()
 
-        print('Hello')
+        #print('Hello')
 
         h, w, c = img.shape
         dim = (w * 4,h * 4)

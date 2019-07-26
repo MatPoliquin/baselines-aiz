@@ -71,7 +71,8 @@ _game_envs['retro'] = {
     'Breakout-Atari2600',
     'ContraForce-Nes',
     'CluCluLand-Nes',
-    'Popeye-Nes'
+    'Popeye-Nes',
+    'SonicTheHedgehog2-Sms'
 }
 
 
