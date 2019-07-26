@@ -9,6 +9,8 @@ import gc
 from py3nvml.py3nvml import *
 from PIL import Image
 import os
+from cpuinfo import get_cpu_info
+import psutil
 
 class TrainingBroadcast():
     def __init__(self):
@@ -39,6 +41,7 @@ class TrainingBroadcast():
         self.gpuUtilStat = [0] * 200
         self.pcieUtilStat = [0] * 200
         self.UpdatePerfStatsFrameCount=0;
+        self.cpuUsage = [0] * 200
         
 
         nvmlInit()
@@ -58,6 +61,9 @@ class TrainingBroadcast():
 
         #print(self.logo)
         #image.show()
+
+        #for key, value in get_cpu_info().items():
+        #    print("{0}: {1}".format(key, value))
         
 
     def set_env(self, env):
@@ -361,9 +367,9 @@ class TrainingBroadcast():
     def DrawRewardGraph(self, posX, posY, width, height):
         fig = plt.figure(0)
 
-        plt.plot(self.rewardmeanList, color="green")
+        plt.plot(self.rewardmeanList, color=(0,1,0))
 
-        plt.title(("Reward Mean: %d" % broadcast.rewardmean), color='green')
+        plt.title(("Reward Mean: %d" % broadcast.rewardmean), color=(0,1,0))
 
         fig.set_facecolor('black')
 
@@ -395,14 +401,14 @@ class TrainingBroadcast():
 
         plt.close()
 
-    def DrawStatGraph(self, posX, posY, width, height, y_data, y_limit, title):
+    def DrawStatGraph(self, posX, posY, width, height, y_data, y_limit, title, color):
         fig = plt.figure(0)
 
-        plt.plot(y_data, color="green")
+        plt.plot(y_data, color=color)
 
         fig.set_facecolor('black')
 
-        plt.title(title, color='green')
+        plt.title(title, color=color)
 
         numYData = len(y_data)
         plt.xlim([0,numYData])
@@ -446,13 +452,20 @@ class TrainingBroadcast():
         pcie_tx = nvmlDeviceGetPcieThroughput(self.gpu_handle,NVML_PCIE_UTIL_TX_BYTES)
         self.pcieUtilStat.append(pcie_tx)
         mem = nvmlDeviceGetMemoryInfo(self.gpu_handle)
+        #psutil.cpu_percent(interval=1)
+        cpuStat = psutil.cpu_percent()
+        self.cpuUsage.append(cpuStat)
+
+        
+
+
 
         
 
         test = 1
-        self.clear_screen(950,45, 200, 50)
-        cv2.putText(self.final, ("VRAM:%f" % (mem.used / 1024.0)), (950, 45), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(self.final, ("RAM:%d" % test), (950, 70), self.font, 1.0, (255,255,255), 1 ,2)
+        self.clear_screen(950,30, 200, 65)
+        cv2.putText(self.final, ("VRAM: %.0f MB" % (mem.used / (1024.0 * 1024.0))), (950, 45), self.font, 1.0, (255,255,255), 1 ,2)
+        #cv2.putText(self.final, ("RAM:%d" % test), (950, 70), self.font, 1.0, (255,255,255), 1 ,2)
         cv2.putText(self.final, ("PCIE: %.3f MB/s" % (pcie_tx / 1024.0)), (950, 95), self.font, 1.0, (255,255,255), 1 ,2)
 
         #test1 = pcie_tx
@@ -463,10 +476,11 @@ class TrainingBroadcast():
         #keep at 200 samples
         self.gpuUtilStat = self.gpuUtilStat[1:len(self.gpuUtilStat)]
         self.pcieUtilStat = self.pcieUtilStat[1:len(self.pcieUtilStat)]
+        self.cpuUsage = self.cpuUsage[1:len(self.cpuUsage)]
 
         if self.UpdatePerfStatsFrameCount == 0:
-            self.DrawStatGraph(1200, 30, 300, 125, self.gpuUtilStat, 100, 'GPU USAGE %')
-            #self.DrawStatGraph(1400, 30, 300, 125, self.pcieUtilStat, None, 'PCIE USAGE MB/S')
+            self.DrawStatGraph(1200, 0, 300, 150, self.gpuUtilStat, 100, 'GPU USAGE', (0,1.0,0))
+            self.DrawStatGraph(1500, 0, 300, 150, self.cpuUsage, 100, 'CPU USAGE',(0,0,1.0))
             self.UpdatePerfStatsFrameCount = 30
 
         self.UpdatePerfStatsFrameCount -= 1
@@ -477,6 +491,7 @@ class TrainingBroadcast():
         if not self.have_nn_info:
             self.get_neuralnetwork_info()
 
+        print('Hello')
 
         h, w, c = img.shape
         dim = (w * 4,h * 4)
