@@ -395,7 +395,7 @@ class TrainingBroadcast():
 
         plt.close()
 
-    def DrawGPUGraph(self, posX, posY, width, height, y_data, y_limit, title):
+    def DrawStatGraph(self, posX, posY, width, height, y_data, y_limit, title):
         fig = plt.figure(0)
 
         plt.plot(y_data, color="green")
@@ -440,6 +440,38 @@ class TrainingBroadcast():
 
         self.final[posY:posY+height,posX:posX+width] = self.logo
 
+    def DrawPerformanceStats(self):
+        nv_util = nvmlDeviceGetUtilizationRates(self.gpu_handle)
+        self.gpuUtilStat.append(nv_util.gpu)
+        pcie_tx = nvmlDeviceGetPcieThroughput(self.gpu_handle,NVML_PCIE_UTIL_TX_BYTES)
+        self.pcieUtilStat.append(pcie_tx)
+        mem = nvmlDeviceGetMemoryInfo(self.gpu_handle)
+
+        
+
+        test = 1
+        self.clear_screen(950,45, 200, 50)
+        cv2.putText(self.final, ("VRAM:%f" % (mem.used / 1024.0)), (950, 45), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(self.final, ("RAM:%d" % test), (950, 70), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(self.final, ("PCIE: %.3f MB/s" % (pcie_tx / 1024.0)), (950, 95), self.font, 1.0, (255,255,255), 1 ,2)
+
+        #test1 = pcie_tx
+        #print(test1 / 1024)
+
+        #numGPUStats = len(gpuUtilStat)
+        
+        #keep at 200 samples
+        self.gpuUtilStat = self.gpuUtilStat[1:len(self.gpuUtilStat)]
+        self.pcieUtilStat = self.pcieUtilStat[1:len(self.pcieUtilStat)]
+
+        if self.UpdatePerfStatsFrameCount == 0:
+            self.DrawStatGraph(1200, 30, 300, 125, self.gpuUtilStat, 100, 'GPU USAGE %')
+            #self.DrawStatGraph(1400, 30, 300, 125, self.pcieUtilStat, None, 'PCIE USAGE MB/S')
+            self.UpdatePerfStatsFrameCount = 30
+
+        self.UpdatePerfStatsFrameCount -= 1
+
+
     def set_gameframe(self, img):
 
         if not self.have_nn_info:
@@ -469,9 +501,6 @@ class TrainingBroadcast():
         
         self.DrawNeuralNetwork(self.final, img, 0, 475)
 
-        #y_data =[5] * 32
-
-        #print(y_data)
 
         if self.updateRewardGraph:
             self.DrawRewardGraph(460,50,400,300)
@@ -479,23 +508,7 @@ class TrainingBroadcast():
 
 
         # Draw Performance Stats
-        nv_util = nvmlDeviceGetUtilizationRates(self.gpu_handle)
-        self.gpuUtilStat.append(nv_util.gpu)
-        pcie_tx = nvmlDeviceGetPcieThroughput(self.gpu_handle,NVML_PCIE_UTIL_TX_BYTES)
-        self.pcieUtilStat.append(pcie_tx / 8)
-
-        #numGPUStats = len(gpuUtilStat)
-        
-        #keep at 200 samples
-        self.gpuUtilStat = self.gpuUtilStat[1:len(self.gpuUtilStat)]
-        self.pcieUtilStat = self.pcieUtilStat[1:len(self.pcieUtilStat)]
-
-        if self.UpdatePerfStatsFrameCount == 0:
-            self.DrawGPUGraph(950, 30, 300, 125, self.gpuUtilStat, 100, 'GPU USAGE %')
-            self.DrawGPUGraph(1400, 30, 300, 125, self.pcieUtilStat, None, 'PCIE USAGE MB/S')
-            self.UpdatePerfStatsFrameCount = 30
-
-        self.UpdatePerfStatsFrameCount -= 1
+        self.DrawPerformanceStats()
         
         return self.final
 
