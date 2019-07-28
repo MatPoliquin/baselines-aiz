@@ -135,6 +135,7 @@ class TrainingBroadcast():
 
     def addframe(self, ob):
         self.framelist.append(ob)
+        #print('added frame: %d' % len(self.framelist))
 
     def show_probabilities(self, final):
         cv2.putText(final, "Probabilities", (0,200), self.font, 1.0, (255,255,255), 1 ,2)
@@ -342,7 +343,7 @@ class TrainingBroadcast():
             self.DrawHiddenLayer(final, posX + 600, posY)
 
             print('UPDATE CONV NETS!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-            self.UpdateNeuralNetFrameCount = 1000
+            self.UpdateNeuralNetFrameCount = 4000
 
         
         #Output layer
@@ -481,19 +482,33 @@ class TrainingBroadcast():
         if self.UpdatePerfStatsFrameCount == 0:
             self.DrawStatGraph(1200, 0, 300, 150, self.gpuUtilStat, 100, 'GPU USAGE', (0,1.0,0))
             self.DrawStatGraph(1500, 0, 300, 150, self.cpuUsage, 100, 'CPU USAGE',(0,0,1.0))
-            self.UpdatePerfStatsFrameCount = 30
+            self.UpdatePerfStatsFrameCount = 120
 
         self.UpdatePerfStatsFrameCount -= 1
 
 
-    def set_gameframe(self, img):
+    def set_gameframe(self, img, baseFrame):
 
         if not self.have_nn_info:
             self.get_neuralnetwork_info()
 
         #print('Hello')
 
+        #print(self.framelist[0].shape)
+
+        #if len(self.framelist) == 0:
+        #    self.final = np.zeros(shape=self.final_dim, dtype=np.uint8)
+        #    return self.final
+
+
+        #print('Have frame list item!!!!!!!!!!!')
+
+        #plt.imshow(img, cmap='gray', interpolation='nearest')
+        #plt.show()
+
+
         h, w, c = img.shape
+        #print(img.shape)
         dim = (w * 4,h * 4)
         upscaled = cv2.resize(img, dim, interpolation=cv2.INTER_NEAREST)
 
@@ -505,6 +520,12 @@ class TrainingBroadcast():
         start_x = self.final_dim[1] - (w*4) -1
         start_y = self.final_dim[0] - (h*4) -1
         self.final[start_y:dim[1]+start_y,start_x:dim[0]+start_x] = upscaled
+
+        #We only update info every 4 frames
+        if not baseFrame:
+            #plt.imshow(self.final, cmap='gray', interpolation='nearest')
+            #plt.show()
+            return self.final
 
 
         self.DrawLogo(0,0,self.logo.shape[0], self.logo.shape[1])
@@ -524,7 +545,11 @@ class TrainingBroadcast():
 
         # Draw Performance Stats
         self.DrawPerformanceStats()
+
+        #self.framelist.clear()
         
+        #plt.imshow(self.final, cmap='gray', interpolation='nearest')
+        #plt.show()
         return self.final
 
 

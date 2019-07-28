@@ -3,6 +3,7 @@ from .atari_wrappers import *
 import numpy as np
 import gym
 from baselines.common.broadcast import broadcast
+import matplotlib.pyplot as plt
 
 class TimeLimit(gym.Wrapper):
     def __init__(self, env, max_episode_steps=None):
@@ -30,6 +31,8 @@ class StochasticFrameSkip(gym.Wrapper):
         self.curac = None
         self.rng = np.random.RandomState()
         self.supports_want_render = hasattr(env, "supports_want_render")
+        self.frameList = []
+        self.audioFrameList = []
 
     def reset(self, **kwargs):
         self.curac = None
@@ -38,6 +41,9 @@ class StochasticFrameSkip(gym.Wrapper):
     def step(self, ac):
         done = False
         totrew = 0
+        self.frameList.clear()
+        self.audioFrameList.clear()
+        #self.frameList = [] * self.n
         for i in range(self.n):
             # First step after reset, use action
             if self.curac is None:
@@ -51,11 +57,21 @@ class StochasticFrameSkip(gym.Wrapper):
                 self.curac = ac
             if self.supports_want_render and i<self.n-1:
                 ob, rew, done, info = self.env.step(self.curac, want_render=False)
+                #print('WANTS RENDER!!!!!!!!!')
             else:
+                #print('STEPPPPPPPPPPPPPPPPPPPPPPPPP')
                 ob, rew, done, info = self.env.step(self.curac)
             totrew += rew
             #for broadcast video
+            #print(ob.shape)
             #broadcast.addframe(ob)
+            #ob[:,:,:] = [0,0,255]
+            #showX = np.reshape(frames, (84, 84))
+            #plt.imshow(ob, cmap='gray', interpolation='nearest')
+            #plt.show()
+            self.frameList.append(ob)
+            self.audioFrameList.append(self.env.em.get_audio())
+            
             if done: break
         return ob, totrew, done, info
 

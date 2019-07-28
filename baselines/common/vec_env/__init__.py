@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from baselines.common.tile_images import tile_images
 from baselines.common.broadcast import broadcast
+import matplotlib.pyplot as plt
 
 class AlreadySteppingError(Exception):
     """
@@ -108,11 +109,24 @@ class VecEnv(ABC):
     def render(self, mode='human'):
         imgs = self.get_images()
         #bigimg = tile_images(imgs)
-        bigimg = broadcast.set_gameframe(imgs[0])
+        #bigimg = []
+        bigimg = (broadcast.set_gameframe(imgs[0], True).copy(), broadcast.set_gameframe(imgs[1], False).copy(), broadcast.set_gameframe(imgs[2], False).copy(), broadcast.set_gameframe(imgs[3], False).copy())
+ 
+        #print('BIGIMG')
+        #print(bigimg[0].shape)
+        
         if mode == 'human':
             self.get_viewer().imshow(bigimg[0])
             return self.get_viewer().isopen
         elif mode == 'rgb_array':
+            #plt.imshow(bigimg[0], cmap='gray', interpolation='nearest')
+            #plt.show()
+            #plt.imshow(bigimg[1], cmap='gray', interpolation='nearest')
+            #plt.show()
+            #plt.imshow(bigimg[2], cmap='gray', interpolation='nearest')
+            #plt.show()
+            #plt.imshow(bigimg[3], cmap='gray', interpolation='nearest')
+            #plt.show()
             return bigimg
         else:
             raise NotImplementedError

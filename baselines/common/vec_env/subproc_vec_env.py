@@ -1,6 +1,7 @@
 import numpy as np
 from multiprocessing import Process, Pipe
 from . import VecEnv, CloudpickleWrapper
+import matplotlib.pyplot as plt
 
 def worker(remote, parent_remote, env_fn_wrapper):
     parent_remote.close()
@@ -17,7 +18,20 @@ def worker(remote, parent_remote, env_fn_wrapper):
                 ob = env.reset()
                 remote.send(ob)
             elif cmd == 'render':
-                remote.send(env.render(mode='rgb_array'))
+                #remote.send(env.render(mode='rgb_array'))
+                if len(env.frameList) > 3:                
+                    remote.send(env.frameList)
+                    #test = 1
+                else:
+                    #tmpList = [] * 4
+                    #print(len(tmpList))
+                    #tmpList[0] = env.render(mode='rgb_array')
+                    #tmpList[1] = tmpList[0]
+                    #tmpList[2] = tmpList[0]
+                    #tmpList[3] = tmpList[0]
+                    tmp = env.render(mode='rgb_array')
+                    tmp[:,:,:] = [255,255,255]
+                    remote.send((tmp,tmp,tmp,tmp))
             elif cmd == 'close':
                 remote.close()
                 break
@@ -91,9 +105,22 @@ class SubprocVecEnv(VecEnv):
 
     def get_images(self):
         self._assert_not_closed()
+        """
         for pipe in self.remotes:
             pipe.send(('render', None))
         imgs = [pipe.recv() for pipe in self.remotes]
+        return imgs
+        """
+        self.remotes[0].send(('render', None))
+        imgs = self.remotes[0].recv()
+
+        #showX = np.reshape(frames, (84, 84))
+        #plt.imshow(imgs[0], cmap='gray', interpolation='nearest')
+        #plt.imshow(imgs[1], cmap='gray', interpolation='nearest')
+        #plt.imshow(imgs[2], cmap='gray', interpolation='nearest')
+        #plt.imshow(imgs[3], cmap='gray', interpolation='nearest')
+        #plt.show()
+
         return imgs
 
     def _assert_not_closed(self):
