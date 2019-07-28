@@ -19,8 +19,9 @@ def worker(remote, parent_remote, env_fn_wrapper):
                 remote.send(ob)
             elif cmd == 'render':
                 #remote.send(env.render(mode='rgb_array'))
-                if len(env.frameList) > 3:                
+                if len(env.frameList[0]) > 3:                
                     remote.send(env.frameList)
+                    #tmp3 = ()
                     #test = 1
                 else:
                     #tmpList = [] * 4
@@ -30,8 +31,13 @@ def worker(remote, parent_remote, env_fn_wrapper):
                     #tmpList[2] = tmpList[0]
                     #tmpList[3] = tmpList[0]
                     tmp = env.render(mode='rgb_array')
-                    tmp[:,:,:] = [255,255,255]
-                    remote.send((tmp,tmp,tmp,tmp))
+                    #tmp[:,:,:] = [255,255,255]
+                    tmp2 = env.em.get_audio()
+                    tmp3 = ((tmp,tmp,tmp,tmp), (tmp2,tmp2,tmp2,tmp2))
+                    remote.send(tmp3)
+
+                    
+
             elif cmd == 'close':
                 remote.close()
                 break

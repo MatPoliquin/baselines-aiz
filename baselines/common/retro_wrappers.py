@@ -32,7 +32,10 @@ class StochasticFrameSkip(gym.Wrapper):
         self.rng = np.random.RandomState()
         self.supports_want_render = hasattr(env, "supports_want_render")
         self.frameList = []
-        self.audioFrameList = []
+        #self.audioFrameList = []
+
+        self.frameList.append([])
+        self.frameList.append([])
 
     def reset(self, **kwargs):
         self.curac = None
@@ -41,8 +44,9 @@ class StochasticFrameSkip(gym.Wrapper):
     def step(self, ac):
         done = False
         totrew = 0
-        self.frameList.clear()
-        self.audioFrameList.clear()
+        self.frameList[0].clear()
+        self.frameList[1].clear()
+        #self.audioFrameList.clear()
         #self.frameList = [] * self.n
         for i in range(self.n):
             # First step after reset, use action
@@ -69,8 +73,12 @@ class StochasticFrameSkip(gym.Wrapper):
             #showX = np.reshape(frames, (84, 84))
             #plt.imshow(ob, cmap='gray', interpolation='nearest')
             #plt.show()
-            self.frameList.append(ob)
-            self.audioFrameList.append(self.env.em.get_audio())
+            self.frameList[0].append(ob)
+            audio_data = self.env.em.get_audio()
+            #print(audio_data)
+            self.frameList[1].append(audio_data)
+
+            #print(self.env.em.get_audio_rate())
             
             if done: break
         return ob, totrew, done, info

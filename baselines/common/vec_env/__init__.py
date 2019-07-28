@@ -107,11 +107,14 @@ class VecEnv(ABC):
         return self.step_wait()
 
     def render(self, mode='human'):
-        imgs = self.get_images()
+        frameData = self.get_images()
         #bigimg = tile_images(imgs)
-        #bigimg = []
-        bigimg = (broadcast.set_gameframe(imgs[0], True).copy(), broadcast.set_gameframe(imgs[1], False).copy(), broadcast.set_gameframe(imgs[2], False).copy(), broadcast.set_gameframe(imgs[3], False).copy())
- 
+        bigimg = []
+        imgs = frameData[0]
+        #print(frameData)
+
+        bigimg.append((broadcast.set_gameframe(imgs[0], True).copy(), broadcast.set_gameframe(imgs[1], False).copy(), broadcast.set_gameframe(imgs[2], False).copy(), broadcast.set_gameframe(imgs[3], False).copy()))
+        bigimg.append(frameData[1])
         #print('BIGIMG')
         #print(bigimg[0].shape)
         
