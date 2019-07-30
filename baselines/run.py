@@ -68,6 +68,8 @@ _game_envs['retro'] = {
     'MsPacMan-Sms',
     'TeenageMutantNinjaTurtlesIITheArcadeGame-Nes',
     'Terminator-Sms',
+    'T2TheArcadeGame-Genesis',
+    'T2TheArcadeGame-Sms',
     'Breakout-Atari2600',
     'ContraForce-Nes',
     'CluCluLand-Nes',

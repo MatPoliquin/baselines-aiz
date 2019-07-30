@@ -243,6 +243,9 @@ class StartDoingRandomActionsWrapper(gym.Wrapper):
 def make_retro(*, game, state, max_episode_steps, **kwargs):
     import retro
     env = retro.make(game, state, **kwargs)
+
+    broadcast.set_audio_rate(env.em.get_audio_rate())
+
     env = StochasticFrameSkip(env, n=4, stickprob=0.25)
     if max_episode_steps is not None:
         env = TimeLimit(env, max_episode_steps=max_episode_steps)

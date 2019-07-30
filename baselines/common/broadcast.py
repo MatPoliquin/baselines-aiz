@@ -42,6 +42,7 @@ class TrainingBroadcast():
         self.pcieUtilStat = [0] * 200
         self.UpdatePerfStatsFrameCount=0;
         self.cpuUsage = [0] * 200
+        self.audio_rate = 0
         
 
         nvmlInit()
@@ -72,6 +73,9 @@ class TrainingBroadcast():
         #for i in range(0,36):
         #    print(self.env.unwrapped.get_action_meaning(i))
         return
+    
+    def set_audio_rate(self, audio_rate):
+        self.audio_rate = audio_rate
 
     def set_action_meaning(self, actionlist):
         #self.env = env
