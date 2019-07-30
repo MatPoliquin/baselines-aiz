@@ -510,10 +510,13 @@ class TrainingBroadcast():
         #plt.imshow(img, cmap='gray', interpolation='nearest')
         #plt.show()
 
+        #print(img.shape)
 
         h, w, c = img.shape
         #print(img.shape)
-        dim = (w * 4,h * 4)
+        xScale = (240.0 / w) * 4
+        yScale = xScale #(224.0 / h) * 4
+        dim = (int(w * xScale), int(h * yScale))
         upscaled = cv2.resize(img, dim, interpolation=cv2.INTER_NEAREST)
 
         if not self.final_inited:
@@ -521,8 +524,8 @@ class TrainingBroadcast():
             print('final inited!!!!!!!!!!!!!!!!!!!!!')
             self.final_inited = True
 
-        start_x = self.final_dim[1] - (w*4) -1
-        start_y = self.final_dim[0] - (h*4) -1
+        start_x = self.final_dim[1] - int(w*xScale) -1
+        start_y = self.final_dim[0] - int(h*yScale) -1
         self.final[start_y:dim[1]+start_y,start_x:dim[0]+start_x] = upscaled
 
         #We only update info every 4 frames
