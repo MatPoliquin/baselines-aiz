@@ -74,7 +74,8 @@ _game_envs['retro'] = {
     'ContraForce-Nes',
     'CluCluLand-Nes',
     'Popeye-Nes',
-    'SonicTheHedgehog2-Sms'
+    'SonicTheHedgehog2-Sms',
+    'GreatTank-Nes'
 }
 
 
