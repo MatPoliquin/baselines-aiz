@@ -75,7 +75,10 @@ _game_envs['retro'] = {
     'CluCluLand-Nes',
     'Popeye-Nes',
     'SonicTheHedgehog2-Sms',
-    'GreatTank-Nes'
+    'GreatTank-Nes',
+    'SpaceHarrier3D-Sms',
+    'Contra-Nes',
+    'SuperMarioWorld-Snes'
 }
 
 
