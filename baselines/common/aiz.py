@@ -19,6 +19,10 @@ class AIZGPU():
         self.memory = 0
         self.pcie_gen = 0
         self.pcie_width = 0
+        self.utilStat = [0] * 200
+        self.pcieUtilStat = [0] * 200
+        self.vramUsage = 0
+        self.utilStat2 = 10
 
 
 class AIZCPU():
@@ -26,6 +30,9 @@ class AIZCPU():
         self.name = ''
         self.num_cores = 0
         self.num_threads = 0
+        self.memory = 0
+
+        self.usage = [0] * 200
 
 
 
@@ -40,7 +47,8 @@ class AIZManager():
         num_gpus = nvmlDeviceGetCount()
         print('NUM GPUS:%d' % num_gpus)
         for i in range(0,num_gpus):
-            new_gpu = self.gpus.append(AIZGPU)
+            self.gpus.append(AIZGPU)
+            new_gpu = self.gpus[i]
             new_gpu.handle = nvmlDeviceGetHandleByIndex(i)
             new_gpu.name = nvmlDeviceGetName(new_gpu.handle)
             new_gpu.memory = nvmlDeviceGetMemoryInfo(new_gpu.handle).total
@@ -49,28 +57,51 @@ class AIZManager():
 
         #Scan CPUs
         self.cpu = AIZCPU()
-        #self.cpu.name
+        #cpu_items = get_cpu_info().items()
+        #self.cpu.name = cpu_items['brand']
+        self.cpu.num_cores = psutil.cpu_count(logical=False)
+        self.cpu.num_threads = psutil.cpu_count()
+        self.cpu.memory = int(psutil.virtual_memory().total) / 1024 / 1024
 
 
         for key, value in get_cpu_info().items():
-            print("{0}: {1}".format(key, value))
-
-        #cpuItems = get_cpu_info().items()
-
-        #cpuItems.
-
-        #print("NUM GPUS: %d" % nvmlDeviceGetCount())
+            if key == 'brand':
+                self.cpu.name = value
+                break
 
 
-        #nv_util = nvmlDeviceGetUtilizationRates(self.gpu_handle)
-        #print("UTILS: %d" % nv_util.gpu)
+        self.PerformanceStats()
 
 
-        #Scan CPUs
+    def PrintInfo(self):
+        print('GPU info')
+        print("%s" % self.gpus[0].name)
+        print("%d MB" % (self.gpus[0].memory / 1024 / 1024))
+        print("PCIE %d.0 %dx" % (self.gpus[0].pcie_gen,self.gpus[0].pcie_width))
+
+        print('CPU Info')
+        print(self.cpu.name)
+        print("%d Cores / %d Thread" % (self.cpu.num_cores, self.cpu.num_threads))
+        print("%d MB RAM" % self.cpu.memory)
 
 
-    
+    def PerformanceStats(self):
+        print(self.gpus[0].name)
 
+        nv_util = nvmlDeviceGetUtilizationRates(self.gpus[0].handle)
+        self.gpus[0].utilStat.append(nv_util.gpu)
+        pcie_tx = nvmlDeviceGetPcieThroughput(self.gpus[0].handle,NVML_PCIE_UTIL_TX_BYTES)
+        self.gpus[0].pcieUtilStat.append(pcie_tx)
+        self.gpus[0].vramUsage = nvmlDeviceGetMemoryInfo(self.gpus[0].handle)
+        #psutil.cpu_percent(interval=1)
+        cpuStat = psutil.cpu_percent()
+        self.cpu.usage.append(cpuStat)
+
+        self.gpus[0].utilStat = self.gpus[0].utilStat[1:len(self.gpus[0].utilStat)]
+        self.gpus[0].pcieUtilStat = self.gpus[0].pcieUtilStat[1:len(self.gpus[0].pcieUtilStat)]
+        self.cpu.usage = self.cpu.usage[1:len(self.cpu.usage)]
+
+        
 
         
     def set_tf(self, tf):
@@ -177,5 +208,5 @@ class AIZManager():
    
 """
 
-ai-z = AIZManager()
+aiz = AIZManager()
 

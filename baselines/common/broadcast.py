@@ -11,6 +11,7 @@ from PIL import Image
 import os
 from cpuinfo import get_cpu_info
 import psutil
+from baselines.common.aiz import aiz
 
 class TrainingBroadcast():
     def __init__(self):
@@ -65,6 +66,8 @@ class TrainingBroadcast():
 
         #for key, value in get_cpu_info().items():
         #    print("{0}: {1}".format(key, value))
+
+        aiz.PrintInfo()
         
 
     def set_env(self, env):
@@ -452,6 +455,9 @@ class TrainingBroadcast():
         self.final[posY:posY+height,posX:posX+width] = self.logo
 
     def DrawPerformanceStats(self):
+        aiz.PerformanceStats()
+
+
         nv_util = nvmlDeviceGetUtilizationRates(self.gpu_handle)
         self.gpuUtilStat.append(nv_util.gpu)
         pcie_tx = nvmlDeviceGetPcieThroughput(self.gpu_handle,NVML_PCIE_UTIL_TX_BYTES)
