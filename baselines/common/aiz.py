@@ -22,7 +22,9 @@ class AIZGPU():
         self.utilStat = [0] * 200
         self.pcieUtilStat = [0] * 200
         self.vramUsage = 0
-        self.utilStat2 = 10
+        #self.utilStat2 = 10
+
+        #print(self.utilStat)
 
 
 class AIZCPU():
@@ -47,7 +49,7 @@ class AIZManager():
         num_gpus = nvmlDeviceGetCount()
         print('NUM GPUS:%d' % num_gpus)
         for i in range(0,num_gpus):
-            self.gpus.append(AIZGPU)
+            self.gpus.append(AIZGPU())
             new_gpu = self.gpus[i]
             new_gpu.handle = nvmlDeviceGetHandleByIndex(i)
             new_gpu.name = nvmlDeviceGetName(new_gpu.handle)
@@ -86,7 +88,7 @@ class AIZManager():
 
 
     def PerformanceStats(self):
-        print(self.gpus[0].name)
+        #print(self.gpus[0].name)
 
         nv_util = nvmlDeviceGetUtilizationRates(self.gpus[0].handle)
         self.gpus[0].utilStat.append(nv_util.gpu)

@@ -557,7 +557,7 @@ class TrainingBroadcast():
 
 
         # Draw Performance Stats
-        self.DrawPerformanceStats()
+        #self.DrawPerformanceStats()
 
         #self.framelist.clear()
         
