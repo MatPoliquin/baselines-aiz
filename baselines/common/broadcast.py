@@ -173,19 +173,19 @@ class TrainingBroadcast():
         #print("NUM GPUS: %d" % nvmlDeviceGetCount())
 
 
-        #nv_util = nvmlDeviceGetUtilizationRates(self.gpu_handle)
+        #nv_util = nvmlDeviceGetUtilizationRates(self.gpu_handle)z
         #print("UTILS: %d" % nv_util.gpu)
 
         #self.clear_screen(posX, posY, 100, 200)
 
-        cv2.putText(final, ("INTEL E5 2667 v3 8C/16T"), (posX, posY), self.font, 1.0, (0,255,255), 1 ,2)
-        cv2.putText(final, ("NVIDIA P106-100 6GB"), (posX, posY + 15), self.font, 1.0, (0,255,255), 1 ,2)
-        cv2.putText(final, ("PCIE 1.1 16X"), (posX, posY + 30), self.font, 1.0, (0,255,255), 1 ,2)
-        cv2.putText(final, ("32 GB DDR4"), (posX, posY + 45), self.font, 1.0, (0, 255,255), 1 ,2)
+        cv2.putText(final, ("%s" % aiz.cpu.name), (posX, posY), self.font, 1.0, (0,255,255), 1 ,2)
+        cv2.putText(final, ("%s" % aiz.gpus[0].name), (posX, posY + 15), self.font, 1.0, (0,255,255), 1 ,2)
+        cv2.putText(final, ("PCIE %d.0 %dx" % (aiz.gpus[0].pcie_gen,aiz.gpus[0].pcie_width)), (posX, posY + 30), self.font, 1.0, (0,255,255), 1 ,2)
+        cv2.putText(final, ("%d MB RAM" % aiz.cpu.memory), (posX, posY + 45), self.font, 1.0, (0, 255,255), 1 ,2)
 
         posY += 100
         cv2.putText(final, ("OPENAI BASELINES 0.1.6"), (posX, posY), self.font, 1.0, (255,255,0), 1 ,2)
-        cv2.putText(final, ("TENSORFLOW 1.14"), (posX, posY + 15), self.font, 1.0, (255,255,0), 1 ,2)
+        cv2.putText(final, ("TENSORFLOW %s" % tf.__version__), (posX, posY + 15), self.font, 1.0, (255,255,0), 1 ,2)
         cv2.putText(final, ("CUDA 10"), (posX, posY + 30), self.font, 1.0, (255,255,0), 1 ,2)
    
 
