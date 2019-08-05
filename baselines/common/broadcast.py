@@ -39,16 +39,9 @@ class TrainingBroadcast():
         self.total_params = 0
         self.rewardmeanList = []
         self.updateRewardGraph = True
-        self.gpuUtilStat = [0] * 200
-        self.pcieUtilStat = [0] * 200
         self.UpdatePerfStatsFrameCount=0;
-        self.cpuUsage = [0] * 200
         self.audio_rate = 0
         
-
-        nvmlInit()
-        #TODO determine which GPU is used
-        self.gpu_handle = nvmlDeviceGetHandleByIndex(0)
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
         print('=============DIR PATH================')
@@ -60,12 +53,6 @@ class TrainingBroadcast():
         img = Image.open(path)    
         dim = (200,200)
         self.logo = cv2.resize(np.array(img), dim, interpolation=cv2.INTER_AREA)
-
-        #print(self.logo)
-        #image.show()
-
-        #for key, value in get_cpu_info().items():
-        #    print("{0}: {1}".format(key, value))
 
         aiz.PrintInfo()
         
@@ -409,90 +396,24 @@ class TrainingBroadcast():
 
         plt.close()
 
-    def DrawStatGraph(self, posX, posY, width, height, y_data, y_limit, title, color):
-        fig = plt.figure(0)
-
-        plt.plot(y_data, color=color)
-
-        fig.set_facecolor('black')
-
-        plt.title(title, color=color)
-
-        numYData = len(y_data)
-        plt.xlim([0,numYData])
-
-        if y_limit:
-            plt.ylim([0,y_limit])
-        #plt.tight_layout()
-  
-        plt.grid(True)
-        plt.rc('grid', color='w', linestyle='solid')
-
-
-        fig.set_size_inches(width/80, height/80, forward=True)
-
-        ax = plt.gca()
-        ax.set_facecolor("black")
-
-
-        ax.tick_params(axis='x', colors='green')
-        ax.tick_params(axis='y', colors='green')
-
-        ax.get_xaxis().set_ticks([])
-
-
-        #draw buffer
-        fig.canvas.draw()
-        width, height = fig.canvas.get_width_height()
-        buffer, size = fig.canvas.print_to_buffer()
-        image = np.fromstring(buffer, dtype='uint8').reshape(height, width, 4)
-        self.final[posY:posY+height,posX:posX+width] = image[:,:,0:3]
-
-        plt.close()
-
     def DrawLogo(self, posX, posY, width, height):
 
         self.final[posY:posY+height,posX:posX+width] = self.logo
 
     def DrawPerformanceStats(self):
-        aiz.PerformanceStats()
 
+        aiz.SamplePerformanceStats()
 
-        nv_util = nvmlDeviceGetUtilizationRates(self.gpu_handle)
-        self.gpuUtilStat.append(nv_util.gpu)
-        pcie_tx = nvmlDeviceGetPcieThroughput(self.gpu_handle,NVML_PCIE_UTIL_TX_BYTES)
-        self.pcieUtilStat.append(pcie_tx)
-        mem = nvmlDeviceGetMemoryInfo(self.gpu_handle)
-        #psutil.cpu_percent(interval=1)
-        cpuStat = psutil.cpu_percent()
-        self.cpuUsage.append(cpuStat)
-
-        
-
-
-
-        
-
-        test = 1
         self.clear_screen(950,30, 200, 65)
-        cv2.putText(self.final, ("VRAM: %.0f MB" % (mem.used / (1024.0 * 1024.0))), (950, 45), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(self.final, ("VRAM: %d MB" % aiz.gpus[0].vramUsage), (950, 45), self.font, 1.0, (255,255,255), 1 ,2)
         #cv2.putText(self.final, ("RAM:%d" % test), (950, 70), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(self.final, ("PCIE: %.3f MB/s" % (pcie_tx / 1024.0)), (950, 95), self.font, 1.0, (255,255,255), 1 ,2)
-
-        #test1 = pcie_tx
-        #print(test1 / 1024)
-
-        #numGPUStats = len(gpuUtilStat)
-        
-        #keep at 200 samples
-        self.gpuUtilStat = self.gpuUtilStat[1:len(self.gpuUtilStat)]
-        self.pcieUtilStat = self.pcieUtilStat[1:len(self.pcieUtilStat)]
-        self.cpuUsage = self.cpuUsage[1:len(self.cpuUsage)]
+        #cv2.putText(self.final, ("PCIE: %.3f MB/s" % (aiz.gpus[0].pcieUtilStat / 1024.0)), (950, 95), self.font, 1.0, (255,255,255), 1 ,2)
 
         if self.UpdatePerfStatsFrameCount == 0:
-            self.DrawStatGraph(1200, 0, 300, 150, self.gpuUtilStat, 100, 'GPU USAGE', (0,1.0,0))
-            self.DrawStatGraph(1500, 0, 300, 150, self.cpuUsage, 100, 'CPU USAGE',(0,0,1.0))
-            self.UpdatePerfStatsFrameCount = 120
+            #self.DrawStatGraph(1200, 0, 300, 150, aiz.gpus[0].utilStat, 100, 'GPU USAGE', (0,1.0,0))
+            aiz.DrawStatGraph(self.final, 1200, 0, 300, 150, aiz.gpus[0].pcieUtilStat, 4000, 'GPU USAGE', (0,1.0,0))
+            aiz.DrawStatGraph(self.final, 1500, 0, 300, 150, aiz.cpu.usage, 100, 'CPU USAGE',(0,0,1.0))
+            self.UpdatePerfStatsFrameCount = 30
 
         self.UpdatePerfStatsFrameCount -= 1
 
@@ -502,21 +423,7 @@ class TrainingBroadcast():
         if not self.have_nn_info:
             self.get_neuralnetwork_info()
 
-        #print('Hello')
-
-        #print(self.framelist[0].shape)
-
-        #if len(self.framelist) == 0:
-        #    self.final = np.zeros(shape=self.final_dim, dtype=np.uint8)
-        #    return self.final
-
-
-        #print('Have frame list item!!!!!!!!!!!')
-
-        #plt.imshow(img, cmap='gray', interpolation='nearest')
-        #plt.show()
-
-        #print(img.shape)
+     
 
         h, w, c = img.shape
         #print(img.shape)
@@ -557,12 +464,9 @@ class TrainingBroadcast():
 
 
         # Draw Performance Stats
-        #self.DrawPerformanceStats()
+        self.DrawPerformanceStats()
 
-        #self.framelist.clear()
-        
-        #plt.imshow(self.final, cmap='gray', interpolation='nearest')
-        #plt.show()
+      
         return self.final
 
 

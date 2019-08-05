@@ -57,6 +57,7 @@ class AIZManager():
             new_gpu.pcie_gen = nvmlDeviceGetMaxPcieLinkGeneration(new_gpu.handle)
             new_gpu.pcie_width = nvmlDeviceGetMaxPcieLinkWidth(new_gpu.handle)
 
+
         #Scan CPUs
         self.cpu = AIZCPU()
         #cpu_items = get_cpu_info().items()
@@ -72,7 +73,7 @@ class AIZManager():
                 break
 
 
-        self.PerformanceStats()
+        #self.PerformanceStats()
 
 
     def PrintInfo(self):
@@ -86,15 +87,59 @@ class AIZManager():
         print("%d Cores / %d Thread" % (self.cpu.num_cores, self.cpu.num_threads))
         print("%d MB RAM" % self.cpu.memory)
 
+    
+    def DrawStatGraph(self, dest, posX, posY, width, height, y_data, y_limit, title, color):
+        fig = plt.figure(0)
 
-    def PerformanceStats(self):
+        plt.plot(y_data, color=color)
+
+        fig.set_facecolor('black')
+
+        plt.title(title, color=color)
+
+        numYData = len(y_data)
+        plt.xlim([0,numYData])
+
+        if y_limit:
+            plt.ylim([0,y_limit])
+        #plt.tight_layout()
+  
+        plt.grid(True)
+        plt.rc('grid', color='w', linestyle='solid')
+
+
+        fig.set_size_inches(width/80, height/80, forward=True)
+
+        ax = plt.gca()
+        ax.set_facecolor("black")
+
+
+        ax.tick_params(axis='x', colors='green')
+        ax.tick_params(axis='y', colors='green')
+
+        ax.get_xaxis().set_ticks([])
+
+
+        #draw buffer
+        fig.canvas.draw()
+        width, height = fig.canvas.get_width_height()
+        buffer, size = fig.canvas.print_to_buffer()
+        image = np.fromstring(buffer, dtype='uint8').reshape(height, width, 4)
+        dest[posY:posY+height,posX:posX+width] = image[:,:,0:3]
+
+        plt.close()
+
+
+    def SamplePerformanceStats(self):
         #print(self.gpus[0].name)
 
         nv_util = nvmlDeviceGetUtilizationRates(self.gpus[0].handle)
         self.gpus[0].utilStat.append(nv_util.gpu)
         pcie_tx = nvmlDeviceGetPcieThroughput(self.gpus[0].handle,NVML_PCIE_UTIL_TX_BYTES)
-        self.gpus[0].pcieUtilStat.append(pcie_tx)
-        self.gpus[0].vramUsage = nvmlDeviceGetMemoryInfo(self.gpus[0].handle)
+        self.gpus[0].pcieUtilStat.append(pcie_tx / 1024.0)
+        self.gpus[0].vramUsage = nvmlDeviceGetMemoryInfo(self.gpus[0].handle).used
+     
+
         #psutil.cpu_percent(interval=1)
         cpuStat = psutil.cpu_percent()
         self.cpu.usage.append(cpuStat)
