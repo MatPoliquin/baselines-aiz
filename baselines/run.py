@@ -78,7 +78,8 @@ _game_envs['retro'] = {
     'GreatTank-Nes',
     'SpaceHarrier3D-Sms',
     'Contra-Nes',
-    'SuperMarioWorld-Snes'
+    'SuperMarioWorld-Snes',
+    'Pong-Atari2600'
 }
 
 
