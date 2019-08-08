@@ -119,6 +119,9 @@ def train(args, extra_args):
         **alg_kwargs
     )
 
+    # delete broadcast object
+    broadcast.Shutdown()
+
     return model, env
 
 
@@ -271,6 +274,9 @@ def main(args):
                 obs = env.reset()
 
         env.close()
+
+
+    
 
     return model
 

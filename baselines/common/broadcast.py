@@ -55,7 +55,12 @@ class TrainingBroadcast():
         self.logo = cv2.resize(np.array(img), dim, interpolation=cv2.INTER_AREA)
 
         aiz.PrintInfo()
-        
+
+    #def __del__(self):
+    #    del aiz
+    
+    def Shutdown(self):
+        aiz.Shutdown()
 
     def set_env(self, env):
         #self.env = envNo module named 'tensorflow_datasets'

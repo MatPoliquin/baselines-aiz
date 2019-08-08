@@ -16,11 +16,19 @@ from time import sleep
 #import Queue
 import threading
 
+
+stop_threads = False
+
 def SampleThreadFunc(input):
-    print('Thread Started!!!!!!!!!!!!!!!!!!!!!!!!')
+    print('AI-Z Thread Started!!!!!!!!!!!!!!!!!!!!!!!!')
+  
     while(True):
         input.SamplePerformanceStats()
         sleep(0.15)
+        global stop_threads
+        if stop_threads: 
+            break
+
 
 
 class AIZGPU():
@@ -88,11 +96,16 @@ class AIZManager():
 
         #self.PerformanceStats()
         self.thread = threading.Thread(target=SampleThreadFunc, args=[(self)])
+        self.thread.setName('AI-Z Sample Thread')
+        self.daemon = True
         self.thread.start()
 
-    def __del__(self):
-        self.thread.terminate()
+    def Shutdown(self):
         print('AI-Z Shutdown!')
+        global stop_threads
+        stop_threads = True
+        self.thread.join()
+        
 
 
     def PrintInfo(self):
