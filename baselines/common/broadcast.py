@@ -410,13 +410,13 @@ class TrainingBroadcast():
         #aiz.SamplePerformanceStats()
 
         self.clear_screen(950,30, 200, 65)
-        cv2.putText(self.final, ("VRAM: %d MB" % aiz.gpus[0].vramUsage), (950, 45), self.font, 1.0, (255,255,255), 1 ,2)
+        #cv2.putText(self.final, ("VRAM: %d MB" % aiz.gpus[0].vramUsage), (950, 45), self.font, 1.0, (255,255,255), 1 ,2)
         #cv2.putText(self.final, ("RAM:%d" % test), (950, 70), self.font, 1.0, (255,255,255), 1 ,2)
         #cv2.putText(self.final, ("PCIE: %.3f MB/s" % (aiz.gpus[0].pcieUtilStat / 1024.0)), (950, 95), self.font, 1.0, (255,255,255), 1 ,2)
 
         if self.UpdatePerfStatsFrameCount == 0:
             aiz.DrawStatGraph(self.final, 1200, 0, 300, 150, aiz.gpus[0].utilStat, 100, 'GPU USAGE', (0,1.0,0))
-            #aiz.DrawStatGraph(self.final, 1200, 0, 300, 150, aiz.gpus[0].pcieUtilStat, 4000, 'GPU USAGE', (0,1.0,0))
+            aiz.DrawStatGraph(self.final, 900, 0, 300, 150, aiz.gpus[0].pcieUtilStat, 4000, 'GPU USAGE', (0,1.0,0))
             aiz.DrawStatGraph(self.final, 1500, 0, 300, 150, aiz.cpu.usage, 100, 'CPU USAGE',(0,0,1.0))
             self.UpdatePerfStatsFrameCount = 30
 

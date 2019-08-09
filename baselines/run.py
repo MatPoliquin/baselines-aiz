@@ -64,6 +64,7 @@ _game_envs['retro'] = {
     'ComixZone-Genesis',
     'DoubleDragon-Nes',
     'GoldenAxeIII-Genesis',
+    'MortalKombatII-Genesis',
     'MortalKombat3-Genesis',
     'MsPacMan-Sms',
     'TeenageMutantNinjaTurtlesIITheArcadeGame-Nes',
