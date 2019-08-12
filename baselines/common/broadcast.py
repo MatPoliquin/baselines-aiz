@@ -143,7 +143,7 @@ class TrainingBroadcast():
         self.rewardmeanList.append(rew)
         self.updateRewardGraph = True
 
-    def DrawTrainingInfo(self, final, PosX, PosY):
+    def DrawMainInfo(self, final, PosX, PosY):
         if math.isnan(broadcast.rewardmean):
             broadcast.rewardmean = 0;
         if math.isnan(broadcast.totaltimesteps):
@@ -152,8 +152,8 @@ class TrainingBroadcast():
         #PosX += 10
         cv2.putText(final, ("GAME:                 %s" % self.env_id), (PosX,PosY+15), self.font, 1.0, (255,255,255), 1 ,2)
         cv2.putText(final, ("ALGO:                 %s" % self.alg), (PosX,PosY+30), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("NEURAL NET:          %s" % self.args['network']), (PosX,PosY+45), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("TRAINABLE PARAMS:   %d float32" % self.total_params), (PosX,PosY+60), self.font, 1.0, (255,255,255), 1 ,2)
+        #cv2.putText(final, ("NEURAL NET:          %s" % self.args['network']), (PosX,PosY+45), self.font, 1.0, (255,255,255), 1 ,2)
+        #cv2.putText(final, ("TRAINABLE PARAMS:   %d float32" % self.total_params), (PosX,PosY+60), self.font, 1.0, (255,255,255), 1 ,2)
         #cv2.putText(final, ("REWARD MEAN:        %d" % broadcast.rewardmean), (PosX,PosY+75), self.font, 1.0, (255,255,255), 1 ,2)
 
         self.clear_screen(PosX + 100, PosY+75, 200, 15)
@@ -376,7 +376,7 @@ class TrainingBroadcast():
 
         plt.plot(self.rewardmeanList, color=(0,1,0))
 
-        plt.title(("Reward Mean: %d" % broadcast.rewardmean), color=(0,1,0))
+        #plt.title(("Reward Mean: %d" % broadcast.rewardmean), color=(0,1,0))
 
         fig.set_facecolor('black')
 
@@ -396,7 +396,7 @@ class TrainingBroadcast():
         ax.tick_params(axis='x', colors='green')
         ax.tick_params(axis='y', colors='green')
 
-        ax.get_xaxis().set_ticks([])
+        #ax.get_xaxis().set_ticks([])
 
 
         #draw buffer
@@ -475,14 +475,14 @@ class TrainingBroadcast():
         self.DrawHardwareInfo(self.final, start_x + self.logo.shape[0], 45)
         #cv2.rectangle(self.final, (0, 0), (425, 200), (0,0,255), 4)
 
-        self.DrawTrainingInfo(self.final, 0, 0)
+        self.DrawMainInfo(self.final, 0, 0)
         #cv2.rectangle(self.final, (0, 215), (425, 425), (0,255,0), 4)
         
         #self.DrawNeuralNetwork(self.final, img, 0, 475)
 
 
         if self.updateRewardGraph:
-            self.DrawRewardGraph(0,500,400,300)
+            self.DrawRewardGraph(0, self.final_dim[0] - 350, start_x - 175, 250)
             self.updateRewardGraph = False
 
 
