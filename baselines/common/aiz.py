@@ -73,7 +73,7 @@ class AIZManager():
             self.gpus.append(AIZGPU())
             new_gpu = self.gpus[i]
             new_gpu.handle = nvmlDeviceGetHandleByIndex(i)
-            new_gpu.name = nvmlDeviceGetName(new_gpu.handle)
+            new_gpu.name = 'NVIDIA ' + nvmlDeviceGetName(new_gpu.handle)
             new_gpu.memory = nvmlDeviceGetMemoryInfo(new_gpu.handle).total
             new_gpu.pcie_gen = nvmlDeviceGetMaxPcieLinkGeneration(new_gpu.handle)
             new_gpu.pcie_width = nvmlDeviceGetMaxPcieLinkWidth(new_gpu.handle)
@@ -90,7 +90,11 @@ class AIZManager():
 
         for key, value in get_cpu_info().items():
             if key == 'brand':
-                self.cpu.name = value
+                self.cpu.name = value.replace('(R)','')
+                self.cpu.name = self.cpu.name.replace('(TM)','')
+                self.cpu.name = self.cpu.name.replace('CPU','')
+                self.cpu.name = self.cpu.name.replace('  @ ','@')
+                #self.cpu.name = self.cpu.name('(TM)','')
                 break
 
 
@@ -184,7 +188,7 @@ class AIZManager():
 
         
     def set_tf(self, tf):
-        #self.env = envNo module named 'tensorflow_datasets'
+        #self.env = env
 
         #for i in range(0,36):
         #    print(self.env.unwrapped.get_action_meaning(i))
