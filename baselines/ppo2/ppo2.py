@@ -187,6 +187,7 @@ def learn(*, network, env, total_timesteps, eval_env = None, seed=None, nsteps=2
             logger.logkv("total_timesteps", update*nbatch)
             broadcast.totaltimesteps = update*nbatch
             logger.logkv("fps", fps)
+            broadcast.fps = fps
             logger.logkv("explained_variance", float(ev))
             logger.logkv('eprewmean', safemean([epinfo['r'] for epinfo in epinfobuf]))
             broadcast.rewardmean = safemean([epinfo['r'] for epinfo in epinfobuf])

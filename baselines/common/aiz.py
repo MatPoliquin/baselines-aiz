@@ -124,10 +124,13 @@ class AIZManager():
         print("%d MB RAM" % self.cpu.memory)
 
     
-    def DrawStatGraph(self, dest, posX, posY, width, height, y_data, y_limit, title, color):
+    def DrawStatGraph(self, dest, posX, posY, width, height, y_data, y_data2, y_limit, title, color):
         fig = plt.figure(0)
 
         plt.plot(y_data, color=color)
+
+        if y_data2:
+            plt.plot(y_data2, color=(0,0,1.0))
 
         fig.set_facecolor('black')
 
@@ -171,10 +174,11 @@ class AIZManager():
 
         nv_util = nvmlDeviceGetUtilizationRates(self.gpus[0].handle)
         self.gpus[0].utilStat.append(nv_util.gpu)
-        pcie_tx = nvmlDeviceGetPcieThroughput(self.gpus[0].handle,NVML_PCIE_UTIL_TX_BYTES)
-        self.gpus[0].pcieUtilStat.append(pcie_tx / 1024.0)
+        pcie_tx_usage = (nvmlDeviceGetPcieThroughput(self.gpus[0].handle,NVML_PCIE_UTIL_TX_BYTES) / (4 * 1000 * 1000)) * 100
+        #print(pcie_tx_usage)
+        self.gpus[0].pcieUtilStat.append(pcie_tx_usage)
         self.gpus[0].vramUsage = nvmlDeviceGetMemoryInfo(self.gpus[0].handle).used
-     
+        #print(self.gpus[0].vramUsage / 1024 / 1024)
 
         #psutil.cpu_percent(interval=1)
         cpuStat = psutil.cpu_percent()
@@ -197,4 +201,3 @@ class AIZManager():
     
 
 aiz = AIZManager()
-

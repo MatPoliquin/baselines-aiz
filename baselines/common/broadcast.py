@@ -12,11 +12,14 @@ import os
 from cpuinfo import get_cpu_info
 import psutil
 from baselines.common.aiz import aiz
+import time
+import datetime
 
 class TrainingBroadcast():
     def __init__(self):
         self.rewardmean = 0
         self.totaltimesteps = 0
+        self.fps = 0
         self.final_dim = (1080, 1920, 3)
         self.playedintro = False
         self.framelist = []
@@ -51,7 +54,7 @@ class TrainingBroadcast():
         path = os.path.join(dir_path, '../../data/broadcast_logo.jpg')
         print(path)
         img = Image.open(path)    
-        dim = (190,190)
+        dim = (170,170)
         self.logo = cv2.resize(np.array(img), dim, interpolation=cv2.INTER_AREA)
 
         aiz.PrintInfo()
@@ -149,17 +152,36 @@ class TrainingBroadcast():
         if math.isnan(broadcast.totaltimesteps):
             broadcast.totaltimesteps = 0;
 
+        #cv2.rectangle(self.final, (PosX, PosY), (275, 150), (0,255,0), 4)
+
         #PosX += 10
-        cv2.putText(final, ("GAME:                 %s" % self.env_id), (PosX,PosY+15), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("ALGO:                 %s" % self.alg), (PosX,PosY+30), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("ENV:      %s" % self.env_id), (PosX,PosY+15), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("ALGO:     %s" % self.alg), (PosX,PosY+30), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("DATE:     %s" % time.strftime("%d/%m/%Y")), (PosX,PosY+45), self.font, 1.0, (255,255,255), 1 ,2)
         #cv2.putText(final, ("NEURAL NET:          %s" % self.args['network']), (PosX,PosY+45), self.font, 1.0, (255,255,255), 1 ,2)
         #cv2.putText(final, ("TRAINABLE PARAMS:   %d float32" % self.total_params), (PosX,PosY+60), self.font, 1.0, (255,255,255), 1 ,2)
-        #cv2.putText(final, ("REWARD MEAN:        %d" % broadcast.rewardmean), (PosX,PosY+75), self.font, 1.0, (255,255,255), 1 ,2)
+        
 
-        self.clear_screen(PosX + 100, PosY+75, 200, 15)
-        cv2.putText(final, ("TIMESTEPS:          %d" % broadcast.totaltimesteps), (PosX,PosY+90), self.font, 1.0, (255,255,255), 1 ,2)
+        
 
+        #PosX += 500
+        PosY += 75
+        cv2.putText(final, ("OPENAI BASELINES 0.1.6"), (PosX , PosY + 15), self.font, 1.0, (255,255,0), 1 ,2)
+        cv2.putText(final, ("TENSORFLOW %s" % tf.__version__), (PosX, PosY + 30), self.font, 1.0, (255,255,0), 1 ,2)
+        cv2.putText(final, ("CUDA 10"), (PosX, PosY + 45), self.font, 1.0, (255,255,0), 1 ,2)
 
+    def DrawMainStats(self, final, PosX, PosY):
+        #Posx += 400
+
+        self.clear_screen(PosX, PosY, 425, 150, (0,0,0))
+
+        cv2.putText(final, ("REWARD MEAN:"), (PosX,PosY+15), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("%d" % broadcast.rewardmean), (PosX,PosY+60), self.font, 2.0, (255,255,255), 2 ,2)         
+        cv2.putText(final, ("TIMESTEPS:"), (PosX + 215,PosY+15), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("%d" % broadcast.totaltimesteps), (PosX + 215,PosY+60), self.font, 2.0, (255,255,255), 2 ,2)
+        play_time = datetime.timedelta(seconds=int(broadcast.totaltimesteps * (1/15)))
+        cv2.putText(final, ("= %s TOTAL PLAY TIME" % play_time), (PosX + 215,PosY+95), self.font, 1.0, (255,255,255), 1 ,2)
+      
         
 
     def show_inputimage(self, final, img):
@@ -181,7 +203,7 @@ class TrainingBroadcast():
         #nv_util = nvmlDeviceGetUtilizationRates(self.gpu_handle)z
         #print("UTILS: %d" % nv_util.gpu)
 
-        #self.clear_screen(posX, posY, 100, 200)
+        self.clear_screen(posX, posY + 60, 200, 50, (0,0,0))
 
         cv2.putText(final, "HARDWARE", (posX, posY), self.font, 1.5, (0,255,255), 2 ,2)
         posY += 30
@@ -191,10 +213,12 @@ class TrainingBroadcast():
         posY += 15
         cv2.putText(final, ("%s" % aiz.gpus[0].name), (posX, posY), self.font, 1.0, (0,255,255), 1 ,2)
         posY += 15
-        cv2.putText(final, ("PCIE %d.0 %dx" % (aiz.gpus[0].pcie_gen,aiz.gpus[0].pcie_width)), (posX, posY), self.font, 1.0, (0,255,255), 1 ,2)
+        cv2.putText(final, ("PCIE %d.0 %dx :%d %%" % (aiz.gpus[0].pcie_gen,aiz.gpus[0].pcie_width, aiz.gpus[0].pcieUtilStat[0])), (posX, posY), self.font, 1.0, (0,255,255), 1 ,2)
         posY += 15
-        cv2.putText(final, ("%d MB RAM" % aiz.cpu.memory), (posX, posY), self.font, 1.0, (0, 255,255), 1 ,2)
-
+        cv2.putText(final, ("%d/%d MB VRAM" % (aiz.gpus[0].vramUsage/1024/1014, aiz.gpus[0].memory/1024/1024)), (posX, posY), self.font, 1.0, (0, 255,255), 1 ,2)
+        posY += 15
+        cv2.putText(final, ("TIMESTEPS/S: %d" % broadcast.fps), (posX ,posY), self.font, 1.0, (255,255,255), 1 ,2)
+        
         #posY += 100
         #cv2.putText(final, ("OPENAI BASELINES 0.1.6"), (posX, posY), self.font, 1.0, (255,255,0), 1 ,2)
         #cv2.putText(final, ("TENSORFLOW %s" % tf.__version__), (posX, posY + 15), self.font, 1.0, (255,255,0), 1 ,2)
@@ -360,7 +384,7 @@ class TrainingBroadcast():
 
         self.UpdateNeuralNetFrameCount -= 1
 
-    def clear_screen(self, posX, posY, width, height):
+    def clear_screen(self, posX, posY, width, height, color = (0,0,0)):
 
         #dim = (dimX, dimY, 3)
         #clear = np.zeros(shape=dim, dtype=np.uint8)
@@ -369,7 +393,7 @@ class TrainingBroadcast():
         #print(posY)
         #print(dim[0])
         #print(dim[1])
-        self.final[posY:posY+height,posX:posX+width] = [0, 0, 0]
+        self.final[posY:posY+height,posX:posX+width] = color
 
     def DrawRewardGraph(self, posX, posY, width, height):
         fig = plt.figure(0)
@@ -422,9 +446,11 @@ class TrainingBroadcast():
         #cv2.putText(self.final, ("PCIE: %.3f MB/s" % (aiz.gpus[0].pcieUtilStat / 1024.0)), (950, 95), self.font, 1.0, (255,255,255), 1 ,2)
 
         if self.UpdatePerfStatsFrameCount == 0:
-            aiz.DrawStatGraph(self.final, 1150, 0, 300, 150, aiz.cpu.usage, 100, 'CPU USAGE',(0,0,0.5))
-            aiz.DrawStatGraph(self.final, 1500, 0, 300, 150, aiz.gpus[0].utilStat, 100, 'GPU USAGE', (0,1.0,0))
-            #aiz.DrawStatGraph(self.final, 900, 0, 300, 150, aiz.gpus[0].pcieUtilStat, 4000, 'PCIE USAGE', (0,1.0,0))
+            aiz.DrawStatGraph(self.final, 1150, 0, 300, 150, aiz.cpu.usage, None, 100, 'CPU USAGE',(0,0,1.0))
+            #aiz.DrawStatGraph(self.final, 1150, 0, 300, 150, aiz.gpus[0].pcieUtilStat, None, 100, 'PCIE USAGE', (0,1.0,0))
+            aiz.DrawStatGraph(self.final, 1500, 0, 300, 150, aiz.gpus[0].utilStat, aiz.gpus[0].pcieUtilStat, 100, 'GPU(green)/PCIE(blue) USAGE', (0,1.0,0))
+            #aiz.DrawStatGraph(self.final, 1500, 0, 300, 150, aiz.gpus[0].utilStat, None, 100, 'GPU USAGE', (0,1.0,0))
+            
             
             self.UpdatePerfStatsFrameCount = 30
 
@@ -461,6 +487,8 @@ class TrainingBroadcast():
         start_y = self.final_dim[0] - int(dim[1]) -1
         self.final[start_y:dim[1]+start_y,start_x:dim[0]+start_x] = upscaled
 
+       
+
         #We only update info every 4 frames
         if not baseFrame:
             #plt.imshow(self.final, cmap='gray', interpolation='nearest')
@@ -476,7 +504,8 @@ class TrainingBroadcast():
         #cv2.rectangle(self.final, (0, 0), (425, 200), (0,0,255), 4)
 
         self.DrawMainInfo(self.final, 0, 0)
-        #cv2.rectangle(self.final, (0, 215), (425, 425), (0,255,0), 4)
+        self.DrawMainStats(self.final, 300, 0)
+        
         
         #self.DrawNeuralNetwork(self.final, img, 0, 475)
 
@@ -487,7 +516,7 @@ class TrainingBroadcast():
 
 
         
-
+        cv2.putText(self.final, ("Showing Env 0 out of 8 parallel environments"), (start_x, start_y), self.font, 1.0, (0,255,0), 1 ,2)
       
         return self.final
 
