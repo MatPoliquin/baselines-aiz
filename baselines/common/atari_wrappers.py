@@ -126,6 +126,8 @@ class ClipRewardEnv(gym.RewardWrapper):
 
     def reward(self, reward):
         """Bin reward to {+1, 0, -1} by its sign."""
+        #if reward != 0:
+        #    print(reward)
         return np.sign(reward)
 
 import matplotlib.pyplot as plt

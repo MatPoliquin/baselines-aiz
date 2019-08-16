@@ -12,8 +12,10 @@ import os
 from cpuinfo import get_cpu_info
 import psutil
 from baselines.common.aiz import aiz
+from baselines.common.aiz_nn import AIZ_NeuralNet
 import time
 import datetime
+import string
 
 class TrainingBroadcast():
     def __init__(self):
@@ -36,14 +38,16 @@ class TrainingBroadcast():
         self.env_id = ''
         self.alg = ''
         self.args = []
-        self.UpdateNeuralNetFrameCount=0;
-        self.final_inited = False;
+        self.UpdateNeuralNetFrameCount=0
+        self.final_inited = False
         self.final = None
         self.total_params = 0
         self.rewardmeanList = []
         self.updateRewardGraph = True
-        self.UpdatePerfStatsFrameCount=0;
+        self.UpdatePerfStatsFrameCount=0
         self.audio_rate = 0
+        self.neuralNet = AIZ_NeuralNet()
+        self.reward = 0
         
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -81,17 +85,28 @@ class TrainingBroadcast():
         #    print(self.env.unwrapped.get_action_meaning(i))
         
         self.action_meaning = actionlist.copy()
-        print('==============ACTION MEANINGS SET================')
-        print('Size:%d' % len(self.action_meaning))
-        for i in range(0,len(self.action_meaning)):
-            print(self.action_meaning[i])
-        print('=================================================')
+        #print('==============ACTION MEANINGS SET================')
+        #print('Size:%d' % len(self.action_meaning))
+        #for i in range(0,len(self.action_meaning)):
+        #    print(self.action_meaning[i])
+        #print('=================================================')
+
+
+        self.neuralNet.set_action_meaning(actionlist)
 
     def set_action_taken(self, action):
         self.action = action
+        self.neuralNet.set_action_taken(action)
 
     def set_action_prob(self, logprob):
         self.action_prob = logprob
+        self.neuralNet.set_action_prob(logprob)
+
+    def set_reward(self, rew):
+        self.reward = rew
+        #if rew != 0:
+        #    print(rew)
+
 
     def get_neuralnetwork_info(self):
         #print(tf.trainable_variables())
@@ -142,6 +157,9 @@ class TrainingBroadcast():
     def show_probabilities(self, final):
         cv2.putText(final, "Probabilities", (0,200), self.font, 1.0, (255,255,255), 1 ,2)
 
+    def clear_screen(self, posX, posY, width, height, color = (0,0,0)):
+        self.final[posY:posY+height,posX:posX+width] = color
+
     def LogRewardMean(self, rew):
         self.rewardmeanList.append(rew)
         self.updateRewardGraph = True
@@ -155,20 +173,14 @@ class TrainingBroadcast():
         #cv2.rectangle(self.final, (PosX, PosY), (275, 150), (0,255,0), 4)
 
         #PosX += 10
-        cv2.putText(final, ("ENV:      %s" % self.env_id), (PosX,PosY+15), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("ALGO:     %s" % self.alg), (PosX,PosY+30), self.font, 1.0, (255,255,255), 1 ,2)
+        env_name = self.env_id
+        alg_name = self.alg
+
+        cv2.putText(final, ("ENV:      %s" % env_name.upper()), (PosX,PosY+15), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("ALGO:     %s" % alg_name.upper()), (PosX,PosY+30), self.font, 1.0, (255,255,255), 1 ,2)
         cv2.putText(final, ("DATE:     %s" % time.strftime("%d/%m/%Y")), (PosX,PosY+45), self.font, 1.0, (255,255,255), 1 ,2)
-        #cv2.putText(final, ("NEURAL NET:          %s" % self.args['network']), (PosX,PosY+45), self.font, 1.0, (255,255,255), 1 ,2)
-        #cv2.putText(final, ("TRAINABLE PARAMS:   %d float32" % self.total_params), (PosX,PosY+60), self.font, 1.0, (255,255,255), 1 ,2)
         
 
-        
-
-        #PosX += 500
-        PosY += 75
-        cv2.putText(final, ("OPENAI BASELINES 0.1.6"), (PosX , PosY + 15), self.font, 1.0, (255,255,0), 1 ,2)
-        cv2.putText(final, ("TENSORFLOW %s" % tf.__version__), (PosX, PosY + 30), self.font, 1.0, (255,255,0), 1 ,2)
-        cv2.putText(final, ("CUDA 10"), (PosX, PosY + 45), self.font, 1.0, (255,255,0), 1 ,2)
 
     def DrawMainStats(self, final, PosX, PosY):
         #Posx += 400
@@ -203,6 +215,8 @@ class TrainingBroadcast():
         #nv_util = nvmlDeviceGetUtilizationRates(self.gpu_handle)z
         #print("UTILS: %d" % nv_util.gpu)
 
+        saved_y = posY
+
         self.clear_screen(posX, posY + 60, 200, 50, (0,0,0))
 
         cv2.putText(final, "HARDWARE", (posX, posY), self.font, 1.5, (0,255,255), 2 ,2)
@@ -220,180 +234,25 @@ class TrainingBroadcast():
         cv2.putText(final, ("TIMESTEPS/S: %d" % broadcast.fps), (posX ,posY), self.font, 1.0, (255,255,255), 1 ,2)
         
         #posY += 100
-        #cv2.putText(final, ("OPENAI BASELINES 0.1.6"), (posX, posY), self.font, 1.0, (255,255,0), 1 ,2)
-        #cv2.putText(final, ("TENSORFLOW %s" % tf.__version__), (posX, posY + 15), self.font, 1.0, (255,255,0), 1 ,2)
-        #cv2.putText(final, ("CUDA 10"), (posX, posY + 30), self.font, 1.0, (255,255,0), 1 ,2)
+        posY = saved_y
+        posX += 300
+        cv2.putText(final, "SOFTWARE", (posX, posY), self.font, 1.5, (0,255,255), 2 ,2)
+        posY += 15
+        cv2.putText(final, ("OPENAI BASELINES 0.1.6"), (posX, posY), self.font, 1.0, (255,255,0), 1 ,2)
+        posY += 15
+        cv2.putText(final, ("TENSORFLOW %s" % tf.__version__), (posX, posY), self.font, 1.0, (255,255,0), 1 ,2)
+        posY += 15
+        cv2.putText(final, ("CUDA 10"), (posX, posY), self.font, 1.0, (255,255,0), 1 ,2)
    
+    def DrawAlgoDetails(self, final, img, posX, posY):
+        #cv2.putText(final, ("NEURAL NET:          %s" % self.args['network']), (PosX,PosY+45), self.font, 1.0, (255,255,255), 1 ,2)
+        #cv2.putText(final, ("TRAINABLE PARAMS:   %d float32" % self.total_params), (PosX,PosY+60), self.font, 1.0, (255,255,255), 1 ,2)
+        self.clear_screen(posX, posY - 15, 200, 100, (0,0,0))
 
+        cv2.putText(final, ("REWARD:     %s" % self.reward), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
 
-    def DrawInputLayer(self, final, img, posX, posY):
-        cv2.putText(final, ("Input"), (posX, posY), self.font, 2.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("84x84 greyscale"), (posX, posY + 15), self.font, 1.0, (0,255,0), 1 ,2)
-        cv2.putText(final, ("Last 4 frames"), (posX, posY + 30), self.font, 1.0, (0, 255,0), 1 ,2)
-
-        dim = (84,84)
-        img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-        img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
-        input = cv2.resize(img, dim, interpolation=cv2.INTER_NEAREST)
-        #final[500:dim[1]+500,0:dim[0]] = input
-
-        imgPosX = posX
-        imgPosY = posY + 50
-        final[imgPosY:imgPosY+dim[1],imgPosX:imgPosX+dim[0]] = input
-        imgPosY += dim[1] + 50
-        cv2.putText(final, ("[...]"), (posX, imgPosY), self.font, 1.0, (0,255,0), 1 ,2)
-        #final[imgPosY:imgPosY+dim[1],imgPosX:imgPosX+dim[0]] = input
-        #imgPosY += dim[1] + 50
-        #final[imgPosY:imgPosY+dim[1],imgPosX:imgPosX+dim[0]] = input
-        #imgPosY += dim[1] + 50
-        #final[imgPosY:imgPosY+dim[1],imgPosX:imgPosX+dim[0]] = input
+        self.neuralNet.Draw(self.final, img, posX, posY)
     
-    def DrawConvNetLayer(self, final, posX, posY, numFilters, filterSize, name, param_name, input_dim):
-        cv2.putText(final, ("%s" % name), (posX, posY), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("%d filters" % (numFilters)), (posX, posY + 15), self.font, 1.0, (0,255,0), 1 ,2)
-        cv2.putText(final, ("%dx%d" % (filterSize, filterSize)), (posX, posY + 30), self.font, 1.0, (0,255,0), 1 ,2)
-        
-        #cv2.rectangle(final, (posX + 100,posY + 480), (180, 560), (255,255,255))
-
-        #test = tf.get_variable(param_name)
-        #print(test)
-        #print(test.shape)
-
-        with tf.variable_scope(param_name, reuse=True) as conv_scope:
-            hello = tf.get_variable('w', shape=[filterSize,filterSize,input_dim,numFilters])
-            #print(hello)
-            weights0 = tf.transpose(hello, [3,0,1,2])
-            weights = weights0.eval()
-            #print(weights.shape)
-
-            num_channels = hello.shape.dims[3]
-            filter_w = hello.shape.dims[0]
-            filter_h = hello.shape.dims[1]
-
-            x = posX
-            y = posY + 40
-
-            for channel in range(0,10):
-                img = weights[channel,:,:,0]
-                #print(img.eval())
-                #img = img * 255.0
-
-                img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
-                #img2 = []
-                img2 = cv2.normalize(img,None,0,255,cv2.NORM_MINMAX)
-
-                dim = (filter_w*4,filter_h*4)
-                upscaled = cv2.resize(img2, dim, interpolation=cv2.INTER_NEAREST)
-
-          
-                
-
-                final[y:y+dim[1], x:x+dim[0]] = upscaled
-                y+=dim[1] + 5
-
-            
-            cv2.putText(final, ("[...]"), (posX, y + 40), self.font, 1.0, (0,255,0), 1 ,2)
-        
-
-    def DrawHiddenLayer(self, final, posX, posY):
-        cv2.putText(final, ("Hidden Layer"), (posX, posY), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("512 units"), (posX, posY + 30), self.font, 1.0, (0,255,0), 1 ,2)
-        cv2.putText(final, ("Fully Connected"), (posX, posY + 15), self.font, 1.0, (0,255,0), 1 ,2)
-
-        with tf.variable_scope('ppo2_model/pi/fc1', reuse=tf.AUTO_REUSE) as conv_scope:
-            hello = tf.get_variable('w', shape=[3136,512])
-            weights0 = tf.transpose(hello, [1,0])
-            weights = weights0.eval()
-            x = posX
-            y = posY + 40
-            for channel in range(0,3):
-                #print(channel)
-                img = np.reshape(weights[channel,:], (56,56))
-            
-                '''
-                for img_x in range(0,img.shape[0]):
-                    for img_y in range(0,img.shape[1]):
-                        if img[img_x, img_y] > 0:
-                            img[img_x, img_y] = 255
-                        else:
-                            img[img_x, img_y] = 0
-                '''
-                img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
-                img2 = cv2.normalize(img,None,0,255,cv2.NORM_MINMAX)
-                dim = (56*2,56*2)
-                upscaled = cv2.resize(img2, dim, interpolation=cv2.INTER_NEAREST)
-
-                #x = (channel % 3) * (56 * 4)
-                #y = int(channel / 3) * (56 * 4)
-                
-                final[y:y+dim[1], x:x+dim[0]] = upscaled
-                y+=dim[1] + 5
-
-            #del hello
-            #del weights0
-            #del weights
-            #del img
-            #del img2
-            #gc.collect()
-
-        cv2.putText(final, ("[...]"), (posX, y + 40), self.font, 1.0, (0,255,0), 1 ,2)
-        
-
-    def DrawOutputLayer(self, final, posX, posY):
-        cv2.putText(final, ("Output"), (posX, posY), self.font, 2.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("36 Actions"), (posX, posY + 15), self.font, 1.0, (0,255,0), 1 ,2)
-        #cv2.putText(final, ("Prob:%f" % self.action_prob), (posX, posY + 30), self.font, 1.0, (0,255,0), 1 ,2)
-        for i in range(0,len(self.action_meaning)):
-            color = (255,255,255)
-            if self.action == i:
-                color = (0,255,0)
-            cv2.putText(final, ("%s" % self.action_meaning[i]), (posX, posY + 55 + i*15), self.font, 1.0, color, 1 ,2)
-
-        
-        
-
-
-    def DrawNeuralNetwork(self, final, img, posX, posY):
-
-        #Input layer
-        self.DrawInputLayer(final, img, posX, posY)
-
-
-        if self.UpdateNeuralNetFrameCount == 0:
-            #Conv net layer 1
-            self.DrawConvNetLayer(final, posX + 150, posY, 32, 8, "Conv Layer 1", 'ppo2_model/pi/c1',4)
-
-            #Conv net layer 2
-            self.DrawConvNetLayer(final, posX + 300, posY, 64, 4, "Conv Layer 2", 'ppo2_model/pi/c2',32)
-        
-            #Conv net layer 3
-            self.DrawConvNetLayer(final, posX + 450, posY, 64, 3, "Conv Layer 3", 'ppo2_model/pi/c3',64)
-        
-            #Hidden layer
-            self.DrawHiddenLayer(final, posX + 600, posY)
-
-            print('UPDATE CONV NETS!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-            self.UpdateNeuralNetFrameCount = 4000
-
-        
-        #Output layer
-        self.DrawOutputLayer(final, posX + 750, posY)
-
-        #Draw Enclosing Rectangle
-        #cv2.rectangle(final, (posX-10, posY), (700, 800), (0,255,0), 2)
-
-        self.UpdateNeuralNetFrameCount -= 1
-
-    def clear_screen(self, posX, posY, width, height, color = (0,0,0)):
-
-        #dim = (dimX, dimY, 3)
-        #clear = np.zeros(shape=dim, dtype=np.uint8)
-
-        #print(posX)
-        #print(posY)
-        #print(dim[0])
-        #print(dim[1])
-        self.final[posY:posY+height,posX:posX+width] = color
 
     def DrawRewardGraph(self, posX, posY, width, height):
         fig = plt.figure(0)
@@ -420,7 +279,7 @@ class TrainingBroadcast():
         ax.tick_params(axis='x', colors='green')
         ax.tick_params(axis='y', colors='green')
 
-        #ax.get_xaxis().set_ticks([])
+        ax.get_xaxis().set_ticks([])
 
 
         #draw buffer
@@ -436,19 +295,14 @@ class TrainingBroadcast():
 
         self.final[posY:posY+height,posX:posX+width] = self.logo
 
-    def DrawPerformanceStats(self):
+    def DrawPerformanceStats(self, posX, posY):
 
-        #aiz.SamplePerformanceStats()
-
-        #self.clear_screen(950,30, 200, 65)
-        #cv2.putText(self.final, ("VRAM: %d MB" % aiz.gpus[0].vramUsage), (950, 45), self.font, 1.0, (255,255,255), 1 ,2)
-        #cv2.putText(self.final, ("RAM:%d" % test), (950, 70), self.font, 1.0, (255,255,255), 1 ,2)
-        #cv2.putText(self.final, ("PCIE: %.3f MB/s" % (aiz.gpus[0].pcieUtilStat / 1024.0)), (950, 95), self.font, 1.0, (255,255,255), 1 ,2)
+       
 
         if self.UpdatePerfStatsFrameCount == 0:
-            aiz.DrawStatGraph(self.final, 1150, 0, 300, 150, aiz.cpu.usage, None, 100, 'CPU USAGE',(0,0,1.0))
+            aiz.DrawStatGraph(self.final, posX, posY, 300, 150, aiz.cpu.usage, None, 100, 'CPU USAGE',(0,0,1.0))
             #aiz.DrawStatGraph(self.final, 1150, 0, 300, 150, aiz.gpus[0].pcieUtilStat, None, 100, 'PCIE USAGE', (0,1.0,0))
-            aiz.DrawStatGraph(self.final, 1500, 0, 300, 150, aiz.gpus[0].utilStat, aiz.gpus[0].pcieUtilStat, 100, 'GPU(green)/PCIE(blue) USAGE', (0,1.0,0))
+            aiz.DrawStatGraph(self.final, posX + 350, posY, 300, 150, aiz.gpus[0].utilStat, aiz.gpus[0].pcieUtilStat, 100, 'GPU(green)/PCIE(blue) USAGE', (0,1.0,0))
             #aiz.DrawStatGraph(self.final, 1500, 0, 300, 150, aiz.gpus[0].utilStat, None, 100, 'GPU USAGE', (0,1.0,0))
             
             
@@ -497,26 +351,31 @@ class TrainingBroadcast():
 
 
         # Draw Performance Stats
-        self.DrawPerformanceStats()
+        machine_y = self.final_dim[0] - self.logo.shape[1]
+        self.DrawPerformanceStats(0, machine_y - 150)
 
-        self.DrawLogo(start_x,0,self.logo.shape[0], self.logo.shape[1])
-        self.DrawHardwareInfo(self.final, start_x + self.logo.shape[0], 45)
+        self.DrawLogo(0, machine_y, self.logo.shape[0], self.logo.shape[1])
+        self.DrawHardwareInfo(self.final, self.logo.shape[0], machine_y + 30)
         #cv2.rectangle(self.final, (0, 0), (425, 200), (0,0,255), 4)
 
         self.DrawMainInfo(self.final, 0, 0)
-        self.DrawMainStats(self.final, 300, 0)
+        self.DrawMainStats(self.final, start_x + 650, 0)
         
         
-        #self.DrawNeuralNetwork(self.final, img, 0, 475)
+    
+
+        
+
+        #self.DrawAlgoDetails(self.final, img, 0, start_y)
 
 
         if self.updateRewardGraph:
-            self.DrawRewardGraph(0, self.final_dim[0] - 350, start_x - 175, 250)
+            self.DrawRewardGraph(start_x, 0, 500, 250)
             self.updateRewardGraph = False
 
 
         
-        cv2.putText(self.final, ("Showing Env 0 out of 8 parallel environments"), (start_x, start_y), self.font, 1.0, (0,255,0), 1 ,2)
+        #cv2.putText(self.final, ("Showing Env 0 out of 8 parallel environments"), (start_x, start_y), self.font, 1.0, (0,255,0), 1 ,2)
       
         return self.final
 

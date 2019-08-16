@@ -43,6 +43,9 @@ class Runner(AbstractEnvRunner):
             broadcast.set_action_taken(actions[0])
 
             self.obs[:], rewards, self.dones, infos = self.env.step(actions)
+
+            broadcast.set_reward(rewards[0])
+
             for info in infos:
                 maybeepinfo = info.get('episode')
                 if maybeepinfo: epinfos.append(maybeepinfo)
