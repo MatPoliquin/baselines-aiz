@@ -237,7 +237,7 @@ class TrainingBroadcast():
         posY = saved_y
         posX += 300
         cv2.putText(final, "SOFTWARE", (posX, posY), self.font, 1.5, (0,255,255), 2 ,2)
-        posY += 15
+        posY += 30
         cv2.putText(final, ("OPENAI BASELINES 0.1.6"), (posX, posY), self.font, 1.0, (255,255,0), 1 ,2)
         posY += 15
         cv2.putText(final, ("TENSORFLOW %s" % tf.__version__), (posX, posY), self.font, 1.0, (255,255,0), 1 ,2)
@@ -245,9 +245,9 @@ class TrainingBroadcast():
         cv2.putText(final, ("CUDA 10"), (posX, posY), self.font, 1.0, (255,255,0), 1 ,2)
    
     def DrawAlgoDetails(self, final, img, posX, posY):
-        #cv2.putText(final, ("NEURAL NET:          %s" % self.args['network']), (PosX,PosY+45), self.font, 1.0, (255,255,255), 1 ,2)
-        #cv2.putText(final, ("TRAINABLE PARAMS:   %d float32" % self.total_params), (PosX,PosY+60), self.font, 1.0, (255,255,255), 1 ,2)
-        self.clear_screen(posX, posY - 15, 200, 100, (0,0,0))
+        cv2.putText(final, ("NEURAL NET:          %s" % self.args['network']), (posX,posY+45), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("TRAINABLE PARAMS:   %d float32" % self.total_params), (posX,posY+60), self.font, 1.0, (255,255,255), 1 ,2)
+        #self.clear_screen(posX, posY - 15, 200, 100, (0,0,0))
 
         cv2.putText(final, ("REWARD:     %s" % self.reward), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
 
@@ -352,7 +352,7 @@ class TrainingBroadcast():
 
         # Draw Performance Stats
         machine_y = self.final_dim[0] - self.logo.shape[1]
-        self.DrawPerformanceStats(0, machine_y - 150)
+        self.DrawPerformanceStats(0, machine_y - 175)
 
         self.DrawLogo(0, machine_y, self.logo.shape[0], self.logo.shape[1])
         self.DrawHardwareInfo(self.final, self.logo.shape[0], machine_y + 30)
@@ -366,11 +366,11 @@ class TrainingBroadcast():
 
         
 
-        #self.DrawAlgoDetails(self.final, img, 0, start_y)
+        self.DrawAlgoDetails(self.final, img, 0, start_y)
 
 
         if self.updateRewardGraph:
-            self.DrawRewardGraph(start_x, 0, 500, 250)
+            self.DrawRewardGraph(start_x, 0, 500, 150)
             self.updateRewardGraph = False
 
 
