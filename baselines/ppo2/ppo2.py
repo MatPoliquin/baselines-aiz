@@ -13,6 +13,8 @@ except ImportError:
 from baselines.ppo2.runner import Runner
 
 
+
+
 def constfn(val):
     def f(_):
         return val
@@ -85,6 +87,12 @@ def learn(*, network, env, total_timesteps, eval_env = None, seed=None, nsteps=2
     else: assert callable(cliprange)
     total_timesteps = int(total_timesteps)
 
+
+    from baselines.common.broadcast import broadcast
+
+    broadcast.gamma = gamma
+    print('=====================================GAMMA:%f' % gamma)
+
     policy = build_policy(env, network, **network_kwargs)
 
     # Get the nb of env
@@ -129,6 +137,7 @@ def learn(*, network, env, total_timesteps, eval_env = None, seed=None, nsteps=2
         frac = 1.0 - (update - 1.0) / nupdates
         # Calculate the learning rate
         lrnow = lr(frac)
+        broadcast.learning_rate = lrnow
         # Calculate the cliprange
         cliprangenow = cliprange(frac)
         # Get minibatch
@@ -189,6 +198,7 @@ def learn(*, network, env, total_timesteps, eval_env = None, seed=None, nsteps=2
             logger.logkv("fps", fps)
             broadcast.fps = fps
             logger.logkv("explained_variance", float(ev))
+            broadcast.explained_variance = float(ev)
             logger.logkv('eprewmean', safemean([epinfo['r'] for epinfo in epinfobuf]))
             broadcast.rewardmean = safemean([epinfo['r'] for epinfo in epinfobuf])
             broadcast.LogRewardMean(broadcast.rewardmean)
@@ -199,6 +209,12 @@ def learn(*, network, env, total_timesteps, eval_env = None, seed=None, nsteps=2
             logger.logkv('time_elapsed', tnow - tfirststart)
             for (lossval, lossname) in zip(lossvals, model.loss_names):
                 logger.logkv(lossname, lossval)
+                if lossname == 'policy_entropy':
+                    broadcast.policy_entropy = lossval
+                if lossname == 'policy_loss':
+                    broadcast.policy_loss = lossval
+
+
             if MPI is None or MPI.COMM_WORLD.Get_rank() == 0:
                 logger.dumpkvs()
         if save_interval and (update % save_interval == 0 or update == 1) and logger.get_dir() and (MPI is None or MPI.COMM_WORLD.Get_rank() == 0):

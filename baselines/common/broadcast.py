@@ -48,6 +48,13 @@ class TrainingBroadcast():
         self.audio_rate = 0
         self.neuralNet = AIZ_NeuralNet()
         self.reward = 0
+        self.frameRewardList = [0] * 200
+        self.frameListUpdateCount = 0
+        self.explained_variance = 0
+        self.policy_entropy = 0
+        self.policy_loss = 0
+        self.learning_rate = 0
+        self.gamma = 0
         
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -104,8 +111,12 @@ class TrainingBroadcast():
 
     def set_reward(self, rew):
         self.reward = rew
+        self.frameRewardList.append(rew)
+        self.frameRewardList = self.frameRewardList[1:len(self.frameRewardList)]
         #if rew != 0:
         #    print(rew)
+
+        self.frameListUpdated = True
 
 
     def get_neuralnetwork_info(self):
@@ -229,7 +240,7 @@ class TrainingBroadcast():
         posY += 15
         cv2.putText(final, ("PCIE %d.0 %dx :%d %%" % (aiz.gpus[0].pcie_gen,aiz.gpus[0].pcie_width, aiz.gpus[0].pcieUtilStat[0])), (posX, posY), self.font, 1.0, (0,255,255), 1 ,2)
         posY += 15
-        cv2.putText(final, ("%d/%d MB VRAM" % (aiz.gpus[0].vramUsage/1024/1014, aiz.gpus[0].memory/1024/1024)), (posX, posY), self.font, 1.0, (0, 255,255), 1 ,2)
+        cv2.putText(final, ("%d/%d MB VRAM" % (aiz.gpus[0].vramUsage/1024/1024, aiz.gpus[0].memory/1024/1024)), (posX, posY), self.font, 1.0, (0, 255,255), 1 ,2)
         posY += 15
         cv2.putText(final, ("TIMESTEPS/S: %d" % broadcast.fps), (posX ,posY), self.font, 1.0, (255,255,255), 1 ,2)
         
@@ -245,13 +256,39 @@ class TrainingBroadcast():
         cv2.putText(final, ("CUDA 10"), (posX, posY), self.font, 1.0, (255,255,0), 1 ,2)
    
     def DrawAlgoDetails(self, final, img, posX, posY):
-        cv2.putText(final, ("NEURAL NET:          %s" % self.args['network']), (posX,posY+45), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("TRAINABLE PARAMS:   %d float32" % self.total_params), (posX,posY+60), self.font, 1.0, (255,255,255), 1 ,2)
-        #self.clear_screen(posX, posY - 15, 200, 100, (0,0,0))
+        
+        
+        saved_posY = posY
 
-        cv2.putText(final, ("REWARD:     %s" % self.reward), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
+        posY += 75
+        self.clear_screen(posX, posY - 15, 300, 200, (0,0,0))
+        cv2.putText(final, ("NEURAL NET TYPE:    %s" % (self.args['network']).upper()), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
+        posY += 15
+        cv2.putText(final, ("TRAINABLE PARAMS:   %d float32" % self.total_params), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
+        posY += 15
+        cv2.putText(final, "HYPER PARAMS:", (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
+        posY += 15
+        cv2.putText(final, ("  LEARNING RATE: %f" % self.learning_rate), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
+        posY += 15
+        cv2.putText(final, ("  GAMMA: %f" % self.gamma), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
+        
+        posY += 15
+        cv2.putText(final, "STATS:", (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
+        posY += 15
+        cv2.putText(final, ("   EXPLAINED VARIANCE: %f" % self.explained_variance), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
+        posY += 15
+        cv2.putText(final, ("   POLICY ENTROPY: %f" % self.policy_entropy), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
+        posY += 15
+        cv2.putText(final, ("   POLICY LOSS: %f" % self.policy_loss), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
 
-        self.neuralNet.Draw(self.final, img, posX, posY)
+        #cv2.putText(final, ("REWARD:     %s" % self.reward), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
+        posY = saved_posY + 30
+        cv2.putText(final, "REWARD FUNCTION:", (posX + 400,posY+15), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, "RETURNS A SCORE [-1, 1]", (posX + 400,posY+30), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, "FOR EVERY TIMESTEPS", (posX + 400,posY+45), self.font, 1.0, (255,255,255), 1 ,2)
+        self.DrawFrameRewardHistogram(posX + 400,posY+60,250,150)
+
+        #self.neuralNet.Draw(self.final, img, posX, posY)
     
 
     def DrawRewardGraph(self, posX, posY, width, height):
@@ -310,6 +347,48 @@ class TrainingBroadcast():
 
         self.UpdatePerfStatsFrameCount -= 1
 
+    def DrawFrameRewardHistogram(self, posX, posY, width, height):
+        fig = plt.figure(0)
+
+        plt.plot(self.frameRewardList, color=(0,1,0))
+        #plt.hist(self.frameRewardList, bins=1, rwidth=0.8)
+        #plt.bar(self.frameRewardList, 50)
+
+        #plt.title(("Reward Mean: %d" % broadcast.rewardmean), color=(0,1,0))
+
+        fig.set_facecolor('black')
+
+        numYData = len(self.frameRewardList)
+        plt.xlim([0,numYData])
+        plt.ylim([-1,1])
+        plt.tight_layout()
+  
+        plt.grid(True)
+        plt.rc('grid', color='w', linestyle='solid')
+
+
+        fig.set_size_inches(width/80, height/80, forward=True)
+
+        ax = plt.gca()
+        ax.set_facecolor("black")
+
+        ax.tick_params(axis='x', colors='green')
+        ax.tick_params(axis='y', colors='green')
+
+        ax.get_xaxis().set_ticks([])
+
+
+        #draw buffer
+        fig.canvas.draw()
+        width, height = fig.canvas.get_width_height()
+        buffer, size = fig.canvas.print_to_buffer()
+        image = np.fromstring(buffer, dtype='uint8').reshape(height, width, 4)
+        self.final[posY:posY+height,posX:posX+width] = image[:,:,0:3]
+
+        plt.close()
+
+        self.frameListUpdated = False
+
 
     def CalculateGameScreenDimensions(self, img):
         h, w, c = img.shape
@@ -365,8 +444,11 @@ class TrainingBroadcast():
     
 
         
+        if self.frameListUpdateCount == 0:
+            self.DrawAlgoDetails(self.final, img, 0, start_y - 100)
+            self.frameListUpdateCount = 4
 
-        self.DrawAlgoDetails(self.final, img, 0, start_y)
+        self.frameListUpdateCount -= 1
 
 
         if self.updateRewardGraph:

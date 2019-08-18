@@ -37,11 +37,11 @@ class AIZ_NeuralNet():
         #    print(self.env.unwrapped.get_action_meaning(i))
         
         self.action_meaning = actionlist.copy()
-        print('==============ACTION MEANINGS SET================')
-        print('Size:%d' % len(self.action_meaning))
-        for i in range(0,len(self.action_meaning)):
-            print(self.action_meaning[i])
-        print('=================================================')
+        #print('==============ACTION MEANINGS SET================')
+        #print('Size:%d' % len(self.action_meaning))
+        #for i in range(0,len(self.action_meaning)):
+        #    print(self.action_meaning[i])
+        #print('=================================================')
 
     def DrawInputLayer(self, final, img, posX, posY):
         cv2.putText(final, ("Input"), (posX, posY), self.font, 2.0, (255,255,255), 1 ,2)
