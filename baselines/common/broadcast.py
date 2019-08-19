@@ -176,10 +176,7 @@ class TrainingBroadcast():
         self.updateRewardGraph = True
 
     def DrawMainInfo(self, final, PosX, PosY):
-        if math.isnan(broadcast.rewardmean):
-            broadcast.rewardmean = 0;
-        if math.isnan(broadcast.totaltimesteps):
-            broadcast.totaltimesteps = 0;
+        
 
         #cv2.rectangle(self.final, (PosX, PosY), (275, 150), (0,255,0), 4)
 
@@ -195,15 +192,24 @@ class TrainingBroadcast():
 
     def DrawMainStats(self, final, PosX, PosY):
         #Posx += 400
+        if math.isnan(broadcast.rewardmean):
+            broadcast.rewardmean = 0;
+        if math.isnan(broadcast.totaltimesteps):
+            broadcast.totaltimesteps = 0;
 
-        self.clear_screen(PosX, PosY, 425, 150, (0,0,0))
+        self.clear_screen(PosX, PosY, 200, 250, (0,0,0))
 
-        cv2.putText(final, ("REWARD MEAN:"), (PosX,PosY+15), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("%d" % broadcast.rewardmean), (PosX,PosY+60), self.font, 2.0, (255,255,255), 2 ,2)         
-        cv2.putText(final, ("TIMESTEPS:"), (PosX + 215,PosY+15), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("%d" % broadcast.totaltimesteps), (PosX + 215,PosY+60), self.font, 2.0, (255,255,255), 2 ,2)
+        PosY += 15
+        cv2.putText(final, ("REWARD MEAN:"), (PosX,PosY), self.font, 1.0, (255,255,255), 1 ,2)
+        PosY += 50
+        cv2.putText(final, ("%d" % broadcast.rewardmean), (PosX,PosY), self.font, 2.0, (255,255,255), 2 ,2)
+        PosY += 50         
+        cv2.putText(final, ("TIMESTEPS:"), (PosX,PosY), self.font, 1.0, (255,255,255), 1 ,2)
+        PosY += 50
+        cv2.putText(final, ("%d" % broadcast.totaltimesteps), (PosX,PosY), self.font, 2.0, (255,255,255), 2 ,2)
         play_time = datetime.timedelta(seconds=int(broadcast.totaltimesteps * (1/15)))
-        cv2.putText(final, ("= %s TOTAL PLAY TIME" % play_time), (PosX + 215,PosY+95), self.font, 1.0, (255,255,255), 1 ,2)
+        PosY += 50
+        cv2.putText(final, ("= %s TOTAL PLAY TIME" % play_time), (PosX,PosY), self.font, 1.0, (255,255,255), 1 ,2)
       
         
 
@@ -259,20 +265,31 @@ class TrainingBroadcast():
         
         
         saved_posY = posY
+        saved_posX = posX
 
-        posY += 75
+
+        cv2.putText(final, "REWARD FUNCTION:", (posX,posY+15), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, "RETURNS A SCORE [-1, 1]", (posX,posY+30), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, "FOR EVERY TIMESTEPS", (posX,posY+45), self.font, 1.0, (255,255,255), 1 ,2)
+        self.DrawFrameRewardHistogram(posX,posY+60,250,150)
+
+
+         #cv2.putText(final, ("REWARD:     %s" % self.reward), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
+        posY = saved_posY + 15
+        posX += 350
+
         self.clear_screen(posX, posY - 15, 300, 200, (0,0,0))
         cv2.putText(final, ("NEURAL NET TYPE:    %s" % (self.args['network']).upper()), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
         posY += 15
         cv2.putText(final, ("TRAINABLE PARAMS:   %d float32" % self.total_params), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
-        posY += 15
+        posY += 30
         cv2.putText(final, "HYPER PARAMS:", (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
         posY += 15
         cv2.putText(final, ("  LEARNING RATE: %f" % self.learning_rate), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
         posY += 15
         cv2.putText(final, ("  GAMMA: %f" % self.gamma), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
         
-        posY += 15
+        posY += 30
         cv2.putText(final, "STATS:", (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
         posY += 15
         cv2.putText(final, ("   EXPLAINED VARIANCE: %f" % self.explained_variance), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
@@ -281,14 +298,11 @@ class TrainingBroadcast():
         posY += 15
         cv2.putText(final, ("   POLICY LOSS: %f" % self.policy_loss), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
 
-        #cv2.putText(final, ("REWARD:     %s" % self.reward), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
-        posY = saved_posY + 30
-        cv2.putText(final, "REWARD FUNCTION:", (posX + 400,posY+15), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, "RETURNS A SCORE [-1, 1]", (posX + 400,posY+30), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, "FOR EVERY TIMESTEPS", (posX + 400,posY+45), self.font, 1.0, (255,255,255), 1 ,2)
-        self.DrawFrameRewardHistogram(posX + 400,posY+60,250,150)
 
-        #self.neuralNet.Draw(self.final, img, posX, posY)
+        posY = saved_posY
+        posX = saved_posX
+       
+        self.neuralNet.Draw(self.final, img, posX, posY + 300)
     
 
     def DrawRewardGraph(self, posX, posY, width, height):
@@ -437,15 +451,16 @@ class TrainingBroadcast():
         self.DrawHardwareInfo(self.final, self.logo.shape[0], machine_y + 30)
         #cv2.rectangle(self.final, (0, 0), (425, 200), (0,0,255), 4)
 
-        self.DrawMainInfo(self.final, 0, 0)
+        
         self.DrawMainStats(self.final, start_x + 650, 0)
+        self.DrawMainInfo(self.final, start_x + 850, 0)
         
         
     
 
         
         if self.frameListUpdateCount == 0:
-            self.DrawAlgoDetails(self.final, img, 0, start_y - 100)
+            self.DrawAlgoDetails(self.final, img, 0, 0)
             self.frameListUpdateCount = 4
 
         self.frameListUpdateCount -= 1

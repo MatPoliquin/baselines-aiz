@@ -166,8 +166,63 @@ class AIZ_NeuralNet():
                 color = (0,255,0)
             cv2.putText(final, ("%s" % self.action_meaning[i]), (posX, posY + 55 + i*15), self.font, 1.0, color, 1 ,2)
 
+    
+    def DrawInput(self, final, img, posX, posY, width, height):
+        cv2.putText(final, ("Input"), (posX, posY), self.font, 1.0, (255,255,255), 2 ,2)
+        cv2.putText(final, ("Stack of"), (posX, posY + 15), self.font, 1.0, (0,255,0), 1 ,2)
+        cv2.putText(final, ("4 frames"), (posX, posY + 30), self.font, 1.0, (0, 255,0), 1 ,2)
+
+        dim = (width,height)
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+        input = cv2.resize(img, dim, interpolation=cv2.INTER_NEAREST)
+        #final[500:dim[1]+500,0:dim[0]] = input
+
+
+        posY += 50
+        for i in range(0,3):
+            cv2.rectangle(final, (posX, posY), (posX + width, posY + height), (0,255,255), 1)
+            posX += 2
+            posY += 2
+
+        imgPosX = posX
+        imgPosY = posY
+        final[imgPosY:imgPosY+dim[1],imgPosX:imgPosX+dim[0]] = input
+        imgPosY += dim[1] + 50
+        #cv2.putText(final, ("[...]"), (posX, imgPosY), self.font, 1.0, (0,255,0), 1 ,2)
+
+
+    def DrawConv(self, final, posX, posY, width, height, name, numFilters, filterSize):
+        cv2.putText(final, ("%s" % name), (posX, posY), self.font, 1.0, (255,255,255), 1 ,2)
+        posY += 15
+        cv2.putText(final, ("%d filters" % (numFilters)), (posX, posY), self.font, 1.0, (0,255,0), 1 ,2)
+        
+        posY += 30
+        for i in range(0,8):
+            cv2.rectangle(final, (posX, posY), (posX + width, posY + height), (0,0,255), 1)
+            posX += 2
+            posY += 2
+
+        posX += int(width / 4)
+        posY += int(height / 2)
+
+        cv2.putText(final, ("%dx%d" % (filterSize, filterSize)), (posX, posY), self.font, 1.0, (0,255,0), 1 ,2)
+    
     def Draw(self, final, img, posX, posY):
 
+
+        self.DrawInput(final, img, posX, posY, 84, 84)
+        posX += 100
+        self.DrawConv(final, posX, posY, 75, 75, 'Conv 1', 32, 8)
+        posX += 100
+        self.DrawConv(final, posX, posY, 75, 75, 'Conv 2', 64, 4)
+        posX += 100
+        self.DrawConv(final, posX, posY, 75, 75, 'Conv 3', 64, 3)
+
+
+
+
+    """
         #Input layer
         self.DrawInputLayer(final, img, posX, posY)
 
@@ -194,5 +249,7 @@ class AIZ_NeuralNet():
 
         #Draw Enclosing Rectangle
         #cv2.rectangle(final, (posX-10, posY), (700, 800), (0,255,0), 2)
+    
 
         self.UpdateNeuralNetFrameCount -= 1
+    """
