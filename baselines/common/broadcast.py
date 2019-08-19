@@ -182,11 +182,10 @@ class TrainingBroadcast():
 
         #PosX += 10
         env_name = self.env_id
-        alg_name = self.alg
+        
 
         cv2.putText(final, ("ENV:      %s" % env_name.upper()), (PosX,PosY+15), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("ALGO:     %s" % alg_name.upper()), (PosX,PosY+30), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("DATE:     %s" % time.strftime("%d/%m/%Y")), (PosX,PosY+45), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("DATE:     %s" % time.strftime("%d/%m/%Y")), (PosX,PosY+30), self.font, 1.0, (255,255,255), 1 ,2)
         
 
 
@@ -201,14 +200,14 @@ class TrainingBroadcast():
 
         PosY += 15
         cv2.putText(final, ("REWARD MEAN:"), (PosX,PosY), self.font, 1.0, (255,255,255), 1 ,2)
-        PosY += 50
+        PosY += 30
         cv2.putText(final, ("%d" % broadcast.rewardmean), (PosX,PosY), self.font, 2.0, (255,255,255), 2 ,2)
-        PosY += 50         
+        PosY += 30         
         cv2.putText(final, ("TIMESTEPS:"), (PosX,PosY), self.font, 1.0, (255,255,255), 1 ,2)
-        PosY += 50
+        PosY += 30
         cv2.putText(final, ("%d" % broadcast.totaltimesteps), (PosX,PosY), self.font, 2.0, (255,255,255), 2 ,2)
         play_time = datetime.timedelta(seconds=int(broadcast.totaltimesteps * (1/15)))
-        PosY += 50
+        PosY += 30
         cv2.putText(final, ("= %s TOTAL PLAY TIME" % play_time), (PosX,PosY), self.font, 1.0, (255,255,255), 1 ,2)
       
         
@@ -252,7 +251,7 @@ class TrainingBroadcast():
         
         #posY += 100
         posY = saved_y
-        posX += 300
+        posX += 320
         cv2.putText(final, "SOFTWARE", (posX, posY), self.font, 1.5, (0,255,255), 2 ,2)
         posY += 30
         cv2.putText(final, ("OPENAI BASELINES 0.1.6"), (posX, posY), self.font, 1.0, (255,255,0), 1 ,2)
@@ -270,7 +269,7 @@ class TrainingBroadcast():
 
         cv2.putText(final, "REWARD FUNCTION:", (posX,posY+15), self.font, 1.0, (255,255,255), 1 ,2)
         cv2.putText(final, "RETURNS A SCORE [-1, 1]", (posX,posY+30), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, "FOR EVERY TIMESTEPS", (posX,posY+45), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, "AT EVERY TIMESTEPS", (posX,posY+45), self.font, 1.0, (255,255,255), 1 ,2)
         self.DrawFrameRewardHistogram(posX,posY+60,250,150)
 
 
@@ -279,6 +278,9 @@ class TrainingBroadcast():
         posX += 350
 
         self.clear_screen(posX, posY - 15, 300, 200, (0,0,0))
+        alg_name = self.alg
+        cv2.putText(final, ("ALGO:                 %s" % alg_name.upper()), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
+        posY += 15
         cv2.putText(final, ("NEURAL NET TYPE:    %s" % (self.args['network']).upper()), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
         posY += 15
         cv2.putText(final, ("TRAINABLE PARAMS:   %d float32" % self.total_params), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
@@ -351,7 +353,7 @@ class TrainingBroadcast():
        
 
         if self.UpdatePerfStatsFrameCount == 0:
-            aiz.DrawStatGraph(self.final, posX, posY, 300, 150, aiz.cpu.usage, None, 100, 'CPU USAGE',(0,0,1.0))
+            aiz.DrawStatGraph(self.final, posX, posY, 300, 150, aiz.cpu.usage, None, 100, 'CPU USAGE',(0,1,1.0))
             #aiz.DrawStatGraph(self.final, 1150, 0, 300, 150, aiz.gpus[0].pcieUtilStat, None, 100, 'PCIE USAGE', (0,1.0,0))
             aiz.DrawStatGraph(self.final, posX + 350, posY, 300, 150, aiz.gpus[0].utilStat, aiz.gpus[0].pcieUtilStat, 100, 'GPU(green)/PCIE(blue) USAGE', (0,1.0,0))
             #aiz.DrawStatGraph(self.final, 1500, 0, 300, 150, aiz.gpus[0].utilStat, None, 100, 'GPU USAGE', (0,1.0,0))
@@ -423,6 +425,9 @@ class TrainingBroadcast():
         
         dim = self.CalculateGameScreenDimensions(img)
 
+        start_x = self.final_dim[1] - int(dim[0]) -1
+        start_y = self.final_dim[0] - int(dim[1]) -1
+
         upscaled = cv2.resize(img, dim, interpolation=cv2.INTER_NEAREST)
 
         if not self.final_inited:
@@ -430,9 +435,7 @@ class TrainingBroadcast():
             print('final inited!!!!!!!!!!!!!!!!!!!!!')
             self.final_inited = True
 
-        start_x = self.final_dim[1] - int(dim[0]) -1
-        start_y = self.final_dim[0] - int(dim[1]) -1
-        self.final[start_y:dim[1]+start_y,start_x:dim[0]+start_x] = upscaled
+        
 
        
 
@@ -473,6 +476,11 @@ class TrainingBroadcast():
 
         
         #cv2.putText(self.final, ("Showing Env 0 out of 8 parallel environments"), (start_x, start_y), self.font, 1.0, (0,255,0), 1 ,2)
+
+
+        # =============== DRAW GAME FRAME ================
+        
+        self.final[start_y:dim[1]+start_y,start_x:dim[0]+start_x] = upscaled
       
         return self.final
 

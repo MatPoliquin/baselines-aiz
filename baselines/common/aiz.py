@@ -91,8 +91,11 @@ class AIZManager():
         self.cpu = AIZCPU()
         #cpu_items = get_cpu_info().items()
         #self.cpu.name = cpu_items['brand']
-        self.cpu.num_cores = psutil.cpu_count(logical=False)
+        #seems to only returns half the cores on Dual CPU systems when number of threads is actually ok
+        #self.cpu.num_cores = psutil.cpu_count(logical=False)
+        #self.cpu.num_cores = len(psutil.Process().cpu_affinity())
         self.cpu.num_threads = psutil.cpu_count()
+        self.cpu.num_cores = self.cpu.num_threads / 2
         self.cpu.memory = int(psutil.virtual_memory().total) / 1024 / 1024
 
 

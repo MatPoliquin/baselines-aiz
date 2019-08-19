@@ -164,13 +164,14 @@ class AIZ_NeuralNet():
             color = (255,255,255)
             if self.action == i:
                 color = (0,255,0)
-            cv2.putText(final, ("%s" % self.action_meaning[i]), (posX, posY + 55 + i*15), self.font, 1.0, color, 1 ,2)
+            cv2.putText(final, ("%s" % self.action_meaning[i]), (posX, posY + i*8), self.font, 0.5, color, 1 ,2)
 
     
     def DrawInput(self, final, img, posX, posY, width, height):
-        cv2.putText(final, ("Input"), (posX, posY), self.font, 1.0, (255,255,255), 2 ,2)
-        cv2.putText(final, ("Stack of"), (posX, posY + 15), self.font, 1.0, (0,255,0), 1 ,2)
-        cv2.putText(final, ("4 frames"), (posX, posY + 30), self.font, 1.0, (0, 255,0), 1 ,2)
+        cv2.putText(final, ("INPUT"), (posX, posY), self.font, 1.0, (255,255,255), 2 ,2)
+        cv2.putText(final, ("LAST 4"), (posX, posY + 15), self.font, 1.0, (0,255,0), 1 ,2)
+        cv2.putText(final, ("FRAMES"), (posX, posY + 30), self.font, 1.0, (0, 255,0), 1 ,2)
+        
 
         dim = (width,height)
         img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
@@ -179,7 +180,7 @@ class AIZ_NeuralNet():
         #final[500:dim[1]+500,0:dim[0]] = input
 
 
-        posY += 50
+        posY += 150
         for i in range(0,3):
             cv2.rectangle(final, (posX, posY), (posX + width, posY + height), (0,255,255), 1)
             posX += 2
@@ -192,12 +193,17 @@ class AIZ_NeuralNet():
         #cv2.putText(final, ("[...]"), (posX, imgPosY), self.font, 1.0, (0,255,0), 1 ,2)
 
 
+        #posX += 2
+        posY += height + 15
+        cv2.putText(final, ("%dx%d" % (84, 84)), (posX, posY), self.font, 1.0, (0,255,0), 1 ,2)
+
+
     def DrawConv(self, final, posX, posY, width, height, name, numFilters, filterSize):
         cv2.putText(final, ("%s" % name), (posX, posY), self.font, 1.0, (255,255,255), 1 ,2)
         posY += 15
-        cv2.putText(final, ("%d filters" % (numFilters)), (posX, posY), self.font, 1.0, (0,255,0), 1 ,2)
+        cv2.putText(final, ("%d FILTERS" % (numFilters)), (posX, posY), self.font, 1.0, (0,255,0), 1 ,2)
         
-        posY += 30
+        posY += 150
         for i in range(0,8):
             cv2.rectangle(final, (posX, posY), (posX + width, posY + height), (0,0,255), 1)
             posX += 2
@@ -207,18 +213,56 @@ class AIZ_NeuralNet():
         posY += int(height / 2)
 
         cv2.putText(final, ("%dx%d" % (filterSize, filterSize)), (posX, posY), self.font, 1.0, (0,255,0), 1 ,2)
+
+    
+    def DrawFC(self, final, posX, posY, width, height, name, numUnits):
+        posX += 30
+
+        cv2.putText(final, ("%s" % name), (posX, posY), self.font, 1.0, (255,255,255), 1 ,2)
+        posY += 15
+        cv2.putText(final, ("%d Units" % (numUnits)), (posX, posY), self.font, 1.0, (0,255,0), 1 ,2)
+        posY += 45
+        cv2.rectangle(final, (posX, posY), (posX + width, posY + height), (0,0,255), 1)
+
+
+        posX += int(width / 2)
+        posY += 20
+        for i in range(0,16):
+            cv2.circle(final, (posX, posY), 7, (0,255,0), -1)
+            posY += 20
+
+        posX -= int(width / 2)
+        #posY += 10
+        cv2.putText(final, ("[...]"), (posX, posY), self.font, 1.0, (0,255,0), 1 ,2)
+
+    def DrawOutput(self, final, posX, posY, width, height):
+        cv2.putText(final, ("OUTPUT"), (posX, posY), self.font, 1.0, (255,255,255), 2 ,2)
+        posY += 15
+        cv2.putText(final, ("%d ACTIONS" % len(self.action_meaning)), (posX, posY), self.font, 1.0, (0,255,0), 1 ,2)
+        posY += 15
+        cv2.rectangle(final, (posX, posY), (posX + width, posY + height), (0,0,255), 1)
+
+        #for i in range(0,len(self.action_meaning)):
+        #    color = (255,255,255)
+        #    if self.action == i:
+        #        color = (0,255,0)
+        #    cv2.putText(final, ("%s" % self.action_meaning[i]), (posX, posY + i*8), self.font, 0.5, color, 1 ,2)
+
     
     def Draw(self, final, img, posX, posY):
 
 
         self.DrawInput(final, img, posX, posY, 84, 84)
         posX += 100
-        self.DrawConv(final, posX, posY, 75, 75, 'Conv 1', 32, 8)
+        self.DrawConv(final, posX, posY, 75, 75, 'CONV 1', 32, 8)
         posX += 100
-        self.DrawConv(final, posX, posY, 75, 75, 'Conv 2', 64, 4)
+        self.DrawConv(final, posX, posY, 75, 75, 'CONV 2', 64, 4)
         posX += 100
-        self.DrawConv(final, posX, posY, 75, 75, 'Conv 3', 64, 3)
-
+        self.DrawConv(final, posX, posY, 75, 75, 'CONV 3', 64, 3)
+        posX += 100
+        self.DrawFC(final, posX, posY, 25, 350, 'FC 1', 512)
+        posX += 150
+        self.DrawOutput(final, posX, posY, 25, 100)
 
 
 
