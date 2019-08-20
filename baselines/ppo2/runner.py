@@ -44,6 +44,9 @@ class Runner(AbstractEnvRunner):
 
             self.obs[:], rewards, self.dones, infos = self.env.step(actions)
 
+            #print("=========================================")
+            #print(infos[0])
+
             broadcast.set_reward(rewards[0])
 
             for info in infos:

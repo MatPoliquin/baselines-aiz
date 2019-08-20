@@ -80,7 +80,8 @@ _game_envs['retro'] = {
     'SpaceHarrier3D-Sms',
     'Contra-Nes',
     'SuperMarioWorld-Snes',
-    'Pong-Atari2600'
+    'Pong-Atari2600',
+    'StreetFighterIISpecialChampionEdition-Genesis'
 }
 
 

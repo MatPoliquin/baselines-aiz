@@ -15,6 +15,7 @@ from _thread import start_new_thread
 from time import sleep
 #import Queue
 import threading
+#import broadcast
 
 
 class AIZ_NeuralNet():
@@ -24,6 +25,10 @@ class AIZ_NeuralNet():
         self.UpdateNeuralNetFrameCount=0
         self.action_meaning = []
         self.action = 0
+        self.action_prob = 0
+    
+    def clear_screen(self, final, posX, posY, width, height, color = (0,0,0)):
+        final[posY:posY+height,posX:posX+width] = color
 
     def set_action_taken(self, action):
         self.action = action
@@ -240,13 +245,26 @@ class AIZ_NeuralNet():
         posY += 15
         cv2.putText(final, ("%d ACTIONS" % len(self.action_meaning)), (posX, posY), self.font, 1.0, (0,255,0), 1 ,2)
         posY += 15
-        cv2.rectangle(final, (posX, posY), (posX + width, posY + height), (0,0,255), 1)
+        cv2.putText(final, "PROBABILITIES", (posX, posY), self.font, 1.0, (0,255,0), 1 ,2)
+        #posY += 15
+        #cv2.rectangle(final, (posX, posY), (posX + width, posY + height), (0,0,255), 1)
 
         #for i in range(0,len(self.action_meaning)):
         #    color = (255,255,255)
         #    if self.action == i:
         #        color = (0,255,0)
         #    cv2.putText(final, ("%s" % self.action_meaning[i]), (posX, posY + i*8), self.font, 0.5, color, 1 ,2)
+
+        posX -= 60
+        posY += 140
+        self.clear_screen(final, posX, posY-15, 240, 90, (0,0,0))
+        cv2.putText(final, ("CHOSEN ACTION:"), (posX, posY), self.font, 1.0, (255,255,255), 1 ,2)
+        posY += 15
+        cv2.putText(final, ("%d: %s" % (self.action, self.action_meaning[self.action])), (posX, posY), self.font, 1.0, (255,255,255), 1 ,2)
+        posY += 30
+        cv2.putText(final, ("LOG PROBABILITY:"), (posX, posY), self.font, 1.0, (255,255,255), 1 ,2)
+        posY += 15
+        cv2.putText(final, ("%f" % self.action_prob), (posX, posY), self.font, 1.0, (255,255,255), 1 ,2)
 
     
     def Draw(self, final, img, posX, posY):

@@ -109,6 +109,11 @@ class TrainingBroadcast():
         self.action_prob = logprob
         self.neuralNet.set_action_prob(logprob)
 
+        #odds = np.exp(logprob)
+        #prob = odds / (1 + odds)
+
+        #print(prob, logprob)
+
     def set_reward(self, rew):
         self.reward = rew
         self.frameRewardList.append(rew)
@@ -183,11 +188,15 @@ class TrainingBroadcast():
         #PosX += 10
         env_name = self.env_id
         
+        PosY += 15
+        cv2.putText(final, ("ENV:      %s" % env_name.upper()), (PosX,PosY), self.font, 1.0, (255,255,255), 1 ,2)
+        PosY += 15
+        cv2.putText(final, ("DATE:     %s" % time.strftime("%d/%m/%Y")), (PosX,PosY), self.font, 1.0, (255,255,255), 1 ,2)
 
-        cv2.putText(final, ("ENV:      %s" % env_name.upper()), (PosX,PosY+15), self.font, 1.0, (255,255,255), 1 ,2)
-        cv2.putText(final, ("DATE:     %s" % time.strftime("%d/%m/%Y")), (PosX,PosY+30), self.font, 1.0, (255,255,255), 1 ,2)
-        
-
+        #PosY += 30
+        #cv2.putText(final, ("HOW TO REPLICATE"), (PosX,PosY), self.font, 1.0, (255,255,255), 1 ,2)
+        #PosY += 15
+        #cv2.putText(final, ("videogames.ai/How-To-Replicate-Experiments"), (PosX,PosY), self.font, 0.5, (255,255,255), 1 ,2)
 
     def DrawMainStats(self, final, PosX, PosY):
         #Posx += 400
@@ -247,7 +256,7 @@ class TrainingBroadcast():
         posY += 15
         cv2.putText(final, ("%d/%d MB VRAM" % (aiz.gpus[0].vramUsage/1024/1024, aiz.gpus[0].memory/1024/1024)), (posX, posY), self.font, 1.0, (0, 255,255), 1 ,2)
         posY += 15
-        cv2.putText(final, ("TIMESTEPS/S: %d" % broadcast.fps), (posX ,posY), self.font, 1.0, (255,255,255), 1 ,2)
+        #cv2.putText(final, ("TIMESTEPS/S: %d" % broadcast.fps), (posX ,posY), self.font, 1.0, (255,255,255), 1 ,2)
         
         #posY += 100
         posY = saved_y
@@ -283,7 +292,9 @@ class TrainingBroadcast():
         posY += 15
         cv2.putText(final, ("NEURAL NET TYPE:    %s" % (self.args['network']).upper()), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
         posY += 15
-        cv2.putText(final, ("TRAINABLE PARAMS:   %d float32" % self.total_params), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(final, ("TRAINABLE PARAMS:   %s float32" % format(self.total_params, ',d')), (posX,posY), self.font, 1.0, (0,255,255), 1 ,2)
+        posY += 15
+        cv2.putText(final, ("OPTIMIZER:            ADAM"), (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
         posY += 30
         cv2.putText(final, "HYPER PARAMS:", (posX,posY), self.font, 1.0, (255,255,255), 1 ,2)
         posY += 15
@@ -464,7 +475,7 @@ class TrainingBroadcast():
         
         if self.frameListUpdateCount == 0:
             self.DrawAlgoDetails(self.final, img, 0, 0)
-            self.frameListUpdateCount = 4
+            self.frameListUpdateCount = 1
 
         self.frameListUpdateCount -= 1
 
@@ -476,6 +487,10 @@ class TrainingBroadcast():
 
         
         #cv2.putText(self.final, ("Showing Env 0 out of 8 parallel environments"), (start_x, start_y), self.font, 1.0, (0,255,0), 1 ,2)
+
+
+        #cv2.putText(final, ("HOW TO REPLICATE"), (PosX,PosY), self.font, 1.0, (255,255,255), 1 ,2)
+        cv2.putText(self.final, ("videogames.ai/How-To-Replicate").upper(), (self.logo.shape[0],self.final_dim[0]-20), self.font, 1.0, (255,255,255), 1 ,2)
 
 
         # =============== DRAW GAME FRAME ================
