@@ -81,7 +81,13 @@ _game_envs['retro'] = {
     'Contra-Nes',
     'SuperMarioWorld-Snes',
     'Pong-Atari2600',
-    'StreetFighterIISpecialChampionEdition-Genesis'
+    'StreetFighterIISpecialChampionEdition-Genesis',
+    'DreamTeamUSA-Genesis',
+    'ESPNBaseballTonight-Genesis',
+    'FatalFury2-Genesis',
+    'FantasyZone-Sms',
+    'FantasyZoneTheMaze-Sms'
+
 }
 
 
