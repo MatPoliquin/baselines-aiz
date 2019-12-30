@@ -86,8 +86,9 @@ _game_envs['retro'] = {
     'ESPNBaseballTonight-Genesis',
     'FatalFury2-Genesis',
     'FantasyZone-Sms',
-    'FantasyZoneTheMaze-Sms'
-
+    'FantasyZoneTheMaze-Sms',
+    'TetrisAttack-Snes',
+    'CalRipkenJrBaseball-Genesis'
 }
 
 
