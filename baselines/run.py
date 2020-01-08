@@ -91,7 +91,8 @@ _game_envs['retro'] = {
     'TetrisAttack-Snes',
     'CalRipkenJrBaseball-Genesis',
     'AfterBurnerII-Genesis',
-    'BattleBull-GameBoy'
+    'BattleBull-GameBoy',
+    'AdventureIsland3-Nes'
 
 }
 
