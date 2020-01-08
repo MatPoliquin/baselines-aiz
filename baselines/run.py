@@ -89,7 +89,10 @@ _game_envs['retro'] = {
     'FantasyZone-Sms',
     'FantasyZoneTheMaze-Sms',
     'TetrisAttack-Snes',
-    'CalRipkenJrBaseball-Genesis'
+    'CalRipkenJrBaseball-Genesis',
+    'AfterBurnerII-Genesis',
+    'BattleBull-GameBoy'
+
 }
 
 
