@@ -92,8 +92,11 @@ _game_envs['retro'] = {
     'CalRipkenJrBaseball-Genesis',
     'AfterBurnerII-Genesis',
     'BattleBull-GameBoy',
-    'AdventureIsland3-Nes'
-
+    'AdventureIsland3-Nes',
+    'CombatCars-Genesis',
+    'EuropeanClubSoccer-Genesis',
+    'Rampage-Nes',
+    'RamboFirstBloodPartII-Sms'
 }
 
 
