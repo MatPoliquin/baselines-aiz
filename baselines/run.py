@@ -98,7 +98,9 @@ _game_envs['retro'] = {
     'Rampage-Nes',
     'RamboFirstBloodPartII-Sms',
     'SuperMarioBros2Japan-Nes',
-    'HangOn-Sms'
+    'HangOn-Sms',
+    'Tennis-Nes',
+    'Punchout-Nes'
 }
 
 
