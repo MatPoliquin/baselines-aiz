@@ -59,7 +59,7 @@ def make_env(env_id, env_type, subrank=0, seed=None, reward_scale=1.0, gamestate
     elif env_type == 'retro':
         import retro
         gamestate = gamestate or retro.State.DEFAULT
-        env = retro_wrappers.make_retro(game=env_id, max_episode_steps=10000, use_restricted_actions=retro.Actions.DISCRETE, state=gamestate)
+        env = retro_wrappers.make_retro(game=env_id, max_episode_steps=100000, use_restricted_actions=retro.Actions.DISCRETE, state=gamestate)
         if subrank == 0:
             actionlist = []
             for i in range(0,env.action_space.n):

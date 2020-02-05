@@ -248,6 +248,7 @@ def make_retro(*, game, state, max_episode_steps, **kwargs):
 
     env = StochasticFrameSkip(env, n=4, stickprob=0.25)
     if max_episode_steps is not None:
+        print('TIME LIMIT:%d' % max_episode_steps)
         env = TimeLimit(env, max_episode_steps=max_episode_steps)
     return env
 
