@@ -1,6 +1,6 @@
 # Baselines-youtube
 
-Version of baselines I use to generate youtube videos of ML models playing games.
+Fork of baselines I use to generate youtube videos of ML models playing games.
 Example videos:
 *   [https://www.youtube.com/watch?v=iedw_7yKgQI&list=PLmwlWbdWpZVvwxzxY1nJII6lEiXeMqLdP](https://www.youtube.com/watch?v=iedw_7yKgQI&list=PLmwlWbdWpZVvwxzxY1nJII6lEiXeMqLdP)
 
